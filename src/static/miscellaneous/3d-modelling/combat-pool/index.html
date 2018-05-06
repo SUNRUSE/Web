@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/shared.css">
+  <title>Combat Pool - 3D Modelling - SUNRUSE</title>
+</head>
+
+<body>
+  <nav>
+    <a href="/">
+      <h1>
+        <img src="/logo.svg" onerror="this.src='/logo.png'" alt="SUNRUSE">
+      </h1>
+    </a>
+    <h2>Open Source</h2>
+    <a href="/game-prototypes">Game Prototypes</a>
+    <a href="/shaders">Shaders</a>
+    <h2>Miscellaneous</h2>
+    <a href="/miscellaneous/3d-modelling">3D Modelling</a>
+    <a href="/miscellaneous/about-contact">About/Contact</a>
+    <a href="/miscellaneous/links">Links</a>
+  </nav>
+  <h3>Combat Pool</h3>
+  <p>Created using C#/.NET/XNA, Blender and GIMP for my final-year-project at university, and the subject of my dissertation.</p>
+  <p>The engine centres on a navmesh for AI navigation, collision (players &quot;crawl&quot; on its surface) and lookup of falloff
+    (light, physics attractors, sounds).</p>
+  <p>Falloff (of lights, sounds, physics attractors, sounds) runs through a unified system; light/sound/etc. entities are proxied
+    through falloff objects which allow any entity to take any shape.</p>
+  <p>Static lighting was baked in Blender. After some fine-tuning, 60FPS was achieved on first-generation Windows Phones, with
+    only occasional drops to 40.</p>
+  <p>Unfortunately, the game design was not up-to-par; it is a vehicular combat game based on pool, where teams use dual miniguns
+    to try to push one another down pockets. The sudden loss of control when you are under fire is very disorienting and
+    can cause motion sickness.</p>
+  <h4>Controls</h4>
+  <dl>
+    <dt>Left</dt>
+    <dd>Turn left</dd>
+    <dt>Right</dt>
+    <dd>Turn right</dd>
+    <dt>Right Control/Ctrl</dt>
+    <dd>Fire miniguns</dd>
+    <dt>Up</dt>
+    <dd>Accelerate</dd>
+    <dt>Down</dt>
+    <dd>Decelerate</dd>
+  </dl>
+  <h4>Gallery</h4>
+  <a href="0.jpg">
+    <img src="0.jpg" />
+  </a>
+  <a href="1.jpg">
+    <img src="1.jpg" />
+  </a>
+  <a href="2.jpg">
+    <img src="2.jpg" />
+  </a>
+  <a href="3.jpg">
+    <img src="3.jpg" />
+  </a>
+  <a href="4.jpg">
+    <img src="4.jpg" />
+  </a>
+  <a href="5.jpg">
+    <img src="5.jpg" />
+  </a>
+  <h4>Downloads</h4>
+  <dl class="downloads">
+    <dt>
+      <a href="playable.zip" download>Playable demo</a>
+    </dt>
+    <dd>Requires the .NET Runtime v4.0. The XNA runtime is included.</dd>
+    <dt>
+      Source
+      <a href="source.zip.001" download="source.zip.001">1</a>
+      <a href="source.zip.002" download>2</a>
+      <a href="source.zip.003" download>3</a>
+    </dt>
+    <dd>Source code and assets. Was built at the time using the Windows Phone 7 SDK, but may be buildable using other versions
+      of Visual Studio 2010..</dd>
+    <dt>
+      <a href="dissertation.pdf" download>Dissertation</a>
+    </dt>
+    <dd>Discusses the development process, its inspiration, and evaluation.</dd>
+  </dl>
+</body>
+
+</html>

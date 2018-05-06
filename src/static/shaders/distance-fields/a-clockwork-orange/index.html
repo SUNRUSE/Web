@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/shared.css">
+  <title>A Clockwork Orange - Shaders - SUNRUSE</title>
+</head>
+
+<body>
+  <nav>
+    <a href="/">
+      <h1>
+        <img src="/logo.svg" onerror="this.src='/logo.png'" alt="SUNRUSE">
+      </h1>
+    </a>
+    <h2>Open Source</h2>
+    <a href="/game-prototypes">Game Prototypes</a>
+    <a href="/shaders">Shaders</a>
+    <h2>Miscellaneous</h2>
+    <a href="/miscellaneous/3d-modelling">3D Modelling</a>
+    <a href="/miscellaneous/about-contact">About/Contact</a>
+    <a href="/miscellaneous/links">Links</a>
+  </nav>
+  <link rel="stylesheet" type="text/css" href="../../viewer.css">
+  <div id="loading">
+    <img src="preview.png" />
+    <div id="loading-description">Downloading...</div>
+  </div>
+  <script id="code" type="glsl">
+#ifdef GL_ES
+precision mediump float;
+#endif
+uniform float seconds;
+uniform vec2 resolution;
+uniform vec2 mouse;
+vec2 sampleLocation;
+
+float add(float shape) {
+    return shape;
+}
+
+float add(float shape, float scene) {
+    return min(shape, scene);
+}
+
+float subtract(float shape) {
+    return -shape;
+}
+
+float subtract(float shape, float scene) {
+    return max(-shape, scene);
+}
+
+float circle(vec2 origin, float radius) {
+    return distance(sampleLocation, origin) - radius;
+}
+
+float box(vec2 n, vec2 p) {
+    return max(sampleLocation.x - p.x, max(sampleLocation.y - p.y, max(n.x - sampleLocation.x, n.y - sampleLocation.y))); 
+}
+
+float scene() {
+    return add(circle(vec2(0.6, 0.4) + vec2(sin(seconds), cos(seconds)) * 0.1, 0.07), subtract(circle(vec2(0.6, 0.4), 0.2), add(box(vec2(0.0, 0.0), vec2(1.0, 0.3)), subtract(circle(vec2(0.4, 0.5), 0.1), add(box(vec2(0.1, 0.2), vec2(0.6, 0.7)))))));
+}
+
+#define SKY_SHADED_COLOR vec3(0.4, 0.6, 1.0)
+#define SKY_LIT_COLOR vec3(0.2, 0.5, 0.7)
+#define SKY_SHADING_RADIUS 0.3
+#define SURFACE_LIT_COLOR vec3(1.0, 0.8, 0.5)
+#define SURFACE_SHADED_COLOR vec3(0.25, 0.2, 0.1)
+#define SURFACE_THICKNESS 0.02
+#define WALL_SHADED_COLOR vec3(0.025, 0.05, 0.5)
+#define WALL_LIT_COLOR vec3(0.15, 0.25, 1.0)
+#define WALL_SHADOW_RADIUS 0.15
+#define SURFACE_SHADOW_HARDNESS 2.0
+
+
+vec3 color() {
+    float dist = scene();
+    sampleLocation.x -= 0.02;
+    sampleLocation.y += 0.05;
+    float dist2 = scene();
+    float surfaceDepth = dist / -SURFACE_THICKNESS;
+    float wallDepth = (dist2 - SURFACE_THICKNESS) / -WALL_SHADOW_RADIUS;
+    float wallLit = min(1.0, max(0.0, wallDepth));
+    float surfaceLit = mix(1.0, min(1.0, max(0.0, SURFACE_SHADOW_HARDNESS - (((dist - dist2) * 0.5 * SURFACE_SHADOW_HARDNESS) / (-SURFACE_THICKNESS)))), 1.0 - surfaceDepth);
+    vec3 surfaceColor = mix(SURFACE_LIT_COLOR, SURFACE_SHADED_COLOR, surfaceLit);
+    vec3 wallColor = mix(WALL_SHADED_COLOR, WALL_LIT_COLOR, wallLit);
+    float skyDepth = min(1.0, dist / SKY_SHADING_RADIUS);
+    vec3 skyColor = mix(SKY_SHADED_COLOR, SKY_LIT_COLOR, skyDepth);
+    vec3 foregroundColor = surfaceDepth > 1.0 ? wallColor : surfaceColor;
+    return dist > 0.0 ? skyColor : foregroundColor;
+}
+
+void main()
+{
+    vec2 uv = gl_FragCoord.xy / min(resolution.x, resolution.y);
+    sampleLocation = uv;
+    gl_FragColor = vec4(pow(color(), vec3(1.0 / 2.2)),1.0);
+}
+</script>
+  <div id="toolbar">
+    <a href="../../">Back</a>
+    <input id="play" name="play" type="checkbox" checked>
+    <label for="play">Play</label>
+    <input id="show-code" name="show-code" type="checkbox">
+    <label for="show-code">Show Code</label>
+  </div>
+  <div id="canvas-container">
+    <canvas></canvas>
+  </div>
+  <script src="../../viewer.js"></script>
+</body>
+
+</html>

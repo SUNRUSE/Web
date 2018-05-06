@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/shared.css">
+  <title>Air Glider - SUNRUSE</title>
+</head>
+
+<body>
+  <nav>
+    <a href="/">
+      <h1>
+        <img src="/logo.svg" onerror="this.src='/logo.png'" alt="SUNRUSE">
+      </h1>
+    </a>
+    <h2>Open Source</h2>
+    <a href="/game-prototypes">Game Prototypes</a>
+    <a href="/shaders">Shaders</a>
+    <h2>Miscellaneous</h2>
+    <a href="/miscellaneous/3d-modelling">3D Modelling</a>
+    <a href="/miscellaneous/about-contact">About/Contact</a>
+    <a href="/miscellaneous/links">Links</a>
+  </nav>
+  <link rel="stylesheet" type="text/css" href="../../viewer.css">
+  <div id="loading">
+    <img src="preview.png" />
+    <div id="loading-description">Downloading...</div>
+  </div>
+  <script id="code" type="glsl">
+#ifdef GL_ES
+    precision mediump float;
+#endif
+uniform float seconds;
+uniform vec2 resolution;
+uniform vec2 mouse;
+// NDC, expanded to match the aspect ratio.
+vec2 aspectNdc;
+#define BUILDING_SIDE_GAPS 2.0
+#define BUILDING_WIDTH 0.25
+#define CHECKER_DENSITY 4.0
+#define SEA_LEVEL -8.0
+vec2 onPlane() {
+    float dist = abs(aspectNdc.x) / BUILDING_SIDE_GAPS;
+    return vec2((1.0 / abs(dist)) + fract((seconds * 0.3) / 1.0) * 1.0, aspectNdc.y / (dist));
+}
+float onPlaneX() {
+    float dist = abs(aspectNdc.x) / BUILDING_SIDE_GAPS;
+    return (1.0 / abs(dist)) + ((seconds * 0.3) / 1.0) * 1.0;
+}
+float trueBuildingId() {
+    float temp = floor(onPlaneX() - BUILDING_WIDTH);
+    return temp;
+}
+float buildingTop() {
+    return ceil(sin(trueBuildingId() * 101.0) * 8.0 + 8.0);
+}
+float buildingBottom() {
+    return floor(sin(trueBuildingId() * 131.0) * 8.0 - 8.0);
+}
+float buildingLocation() {
+    return onPlane().x / 1.0;
+}
+float buildingId() {
+    return floor(buildingLocation());
+}
+float withinBuilding() {
+    return fract(buildingLocation());
+}
+bool onSideOfBuilding() {
+    return withinBuilding() > BUILDING_WIDTH;
+}
+vec3 checker(vec2 uv) {
+    uv = fract(uv);
+    return uv.x > 0.5 != uv.y > 0.5 ? vec3(1.0, 1.0, 0.6) : vec3(0.6, 0.6, 1.0);
+}
+vec2 checkerFront() {
+    vec2 offset = aspectNdc;
+    return CHECKER_DENSITY * (offset * ((buildingId() + 1.0) - fract(seconds * 0.3)));
+}
+vec2 checkerSide() {
+    return onPlane() * CHECKER_DENSITY;
+}
+bool onFrontOfBuilding() {
+    return abs(checkerFront().x) > (BUILDING_SIDE_GAPS * CHECKER_DENSITY)+ (CHECKER_DENSITY * BUILDING_WIDTH);
+}
+#define SKY_ZENITH vec3(0.1, 0.3, 0.6)
+#define SKY_HORIZON vec3(0.8, 0.8, 1.0)
+vec3 sky() {
+    return mix(SKY_ZENITH, SKY_HORIZON, 1.0 / (1.0 + abs(aspectNdc.y * 3.0)));
+}
+#define CHECKER_SIDE_COLOR 1.0
+#define CHECKER_FRONT_COLOR 0.6
+#define SEA_REFLECTION_COLOR vec3(0.6, 0.7, 0.8)
+#define SEA_BASE_COLOR vec3(0.05, 0.1, 0.12)
+vec3 color() {    
+    vec2 uv = onSideOfBuilding() ? checkerFront() : checkerSide();
+    bool inSky = (onFrontOfBuilding() && onSideOfBuilding()) || uv.y > buildingTop() || uv.y < buildingBottom();
+    vec3 preColor = inSky? sky() : mix(checker(uv) * (onSideOfBuilding() ? CHECKER_SIDE_COLOR : CHECKER_FRONT_COLOR), sky(), 1.0 / (abs(aspectNdc.x * 5.0) + 1.0));
+    return preColor;
+}
+void main()
+{
+    aspectNdc = (gl_FragCoord.xy - (resolution / 2.0)) / (min(resolution.x, resolution.y) / 2.0);
+    gl_FragColor = vec4(pow(color(), vec3(1.0 / 2.2)), 1.0);
+}
+</script>
+  <div id="toolbar">
+    <a href="../../">Back</a>
+    <input id="play" name="play" type="checkbox" checked>
+    <label for="play">Play</label>
+    <input id="show-code" name="show-code" type="checkbox">
+    <label for="show-code">Show Code</label>
+  </div>
+  <div id="canvas-container">
+    <canvas></canvas>
+  </div>
+  <script src="../../viewer.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,4252 @@
+<html>
+
+<head>
+
+<title>Minecraft Text Adventure</title>
+
+<style type="text/css">
+
+.comment
+{
+text-align:center;
+}
+
+.previouscommand
+{
+font-style: italic;
+}
+
+#textincontainer
+{
+text-align:center;
+}
+
+</style>
+
+<script type="text/javascript">
+
+var playerx = 0;
+var playery = 0;
+
+var woodaxes = 0;
+var stoneaxes = 0;
+var metalaxes = 0;
+var woodswords = 0;
+var stoneswords = 0;
+var metalswords = 0;
+var woodpicks = 0;
+var stonepicks = 0;
+var metalpicks = 0;
+var woodspades = 0;
+var stonespades = 0;
+var metalspades = 0;
+var logs = 0;
+var planks = 0;
+var sticks = 0;
+var stone = 0;
+var metal = 0;
+var dirt = 0;
+var ore = 0;
+var coal = 0;
+var torches = 0;
+var chopsleft = 0;
+var slashesleft = 0;
+var shovelsleft = 0;
+var picksleft = 0;
+var workbench = 0;
+var furnace = 0;
+var boat = 0;
+var pork = 0;
+var wool = 0;
+
+var cells = new Array( 0 );
+
+var hearts = 16;
+var currentenemy = 0;
+
+function takedamage( ins, ouch )
+{
+
+	var out = ins;
+	
+	out += "<br/><div class = 'comment'>";
+	
+	out += "You take " + ouch + " hearts of damage.";
+	
+	out += "</div>";
+	
+	hearts -= ouch;
+	
+	if( hearts <= 0 )
+	{
+	
+		document.getElementById( "textincontainer" ).innerHTML = "";
+	
+		out += "<br/><div class = 'comment'>";
+		
+		out += "You have died.  The world goes black and time slips into the infinite as, from your perspective, the universe ceases to exist.  Not you.";
+		
+		out += "</div>";	
+	
+	}
+	else
+	{
+		
+		out += "<br/><div class = 'comment'>";
+		
+		out += "You have " + hearts + " hearts remaining.";
+		
+		out += "</div>";
+		
+	}
+	
+	return out;
+
+}
+
+function Enemy()
+{
+
+	this.type = Math.floor( Math.random() * 2 );
+	
+	this.health = 2;
+
+}
+
+function Cell( px, py )
+{
+
+	this.px = px;
+	this.py = py;
+	//plain, lake, hor. canyon, ver. canyon, mountain, sea
+	this.type = Math.floor( Math.random() * 6 );
+	
+	if( ( px == 0 ) && ( py == 0 ) )
+	{
+	
+		this.type = 0;
+	
+	}
+	
+	var maxenemies = 0;
+	
+	switch( this.type )
+	{
+	
+		case 0:
+		{
+		
+			this.trees = 2 + Math.floor( Math.random() * 3 ) ;
+			this.sheep = Math.floor( Math.random() * 2 );
+			this.pigs = Math.floor( Math.random() * 2 );
+			this.stone = Math.floor( Math.random() * 8 ) + 12;
+			this.dirt = Math.floor( Math.random() * 8 ) + 12;			
+			this.sand = 0;	
+			this.coal = 0;
+			this.ore = 0;	
+			
+			maxenemies = 2;
+		
+		}
+		break;
+	
+		case 1:
+		{
+		
+			this.trees =  Math.floor( Math.random() );
+			this.sheep = Math.floor( Math.random() );
+			this.pigs = Math.floor( Math.random() );
+			this.stone = Math.floor( Math.random() * 3 ) + 7;
+			this.dirt = Math.floor( Math.random() * 3 ) + 7;			
+			this.sand = Math.floor( Math.random() * 3 ) + 7;			
+			this.coal = 0;
+			this.ore = 0;			
+		
+			maxenemies = 1;		
+		
+		}
+		break;	
+	
+		case 2:
+		case 3:
+		{
+		
+			this.trees = Math.floor( Math.random() * 2 ) ;
+			this.sheep = Math.floor( Math.random() * 2 );
+			this.pigs = Math.floor( Math.random() * 2 );
+			this.stone = Math.floor( Math.random() * 12 ) + 16;
+			this.dirt = Math.floor( Math.random() * 4 ) + 8;			
+			this.sand = 0;			
+			this.coal = Math.floor( Math.random() * 3 );
+			this.ore = Math.floor( Math.random() * 2 );	
+			
+			maxenemies = 2;		
+		
+		}
+		break;	
+	
+		case 4:
+		{
+		
+			this.trees = Math.floor( Math.random() * 5 ) ;
+			this.sheep = Math.floor( Math.random() );
+			this.pigs = Math.floor( Math.random() );
+			this.stone = Math.floor( Math.random() * 12 ) + 24;
+			this.dirt = Math.floor( Math.random() * 12 ) + 24;			
+			this.sand = 0;			
+			this.coal = Math.floor( Math.random() * 3 );
+			this.ore = Math.floor( Math.random() * 2 );	
+			
+			maxenemies = 2;		
+		
+		}
+		break;	
+	
+		case 5:
+		{
+		
+			this.trees = 0;
+			this.sheep = 0;
+			this.pigs = 0;
+			this.stone = 0;
+			this.dirt = 0;			
+			this.sand = 0;			
+			this.coal = 0;
+			this.ore = 0;			
+		
+		}
+		break;	
+	
+	}
+	
+	if( ( px == 0 ) && ( py == 0 ) )
+	{
+	
+		maxenemies = 0;
+	
+	}	
+	
+	if( Math.floor( Math.random() * 3 ) > 0 )
+	{
+	
+		maxenemies = 0;
+	
+	}
+	
+	if( maxenemies == 0 )
+	{
+	
+		this.enemies = new Array( 0 );
+	
+	}
+	else
+	{
+	
+		this.enemies = new Array( maxenemies );
+		
+		var mine = 0;
+		
+		while( mine < maxenemies )
+		{
+		
+			this.enemies[ mine ] = new Enemy();
+		
+			mine++;
+		
+		}
+	
+	}
+
+}
+
+function verifycell( px, py )
+{
+
+	var mine = 0;
+	
+	while( mine < cells.length )
+	{
+	
+		if( ( cells[ mine ].px == px ) && ( cells[ mine ].py == py ) )
+		{
+		
+			return cells[ mine ];
+		
+		}
+	
+		mine++;
+	
+	}
+	
+	var mycell = new Cell( px, py );
+	
+	cells.push( mycell );
+	
+	return mycell;
+
+}
+
+function updateenemies( ins )
+{
+
+    var output = ins;
+
+	var me = verifycell( playerx, playery );
+
+	if( currentenemy >= me.enemies.length )
+	{
+	
+		currentenemy = 0;
+	
+	}
+	
+	if( me.enemies.length > 0 )
+	{
+	
+		if( me.enemies[ currentenemy ].type == 0 )
+		{
+		
+			if( Math.floor( Math.random() * 4 ) == 0 )
+			{
+			
+				output += "<div class = 'comment'>";
+				output += "A skeleton fires an arrow.  It hits, dealing a two heart of damage.";
+				output += "</div>";
+				
+				output = takedamage( output, 2 );
+			
+			}
+			else
+			{
+			
+				output += "<div class = 'comment'>";
+				output += "A skeleton fires an arrow.  It whilstles clean over your head.";
+				output += "</div>";			
+			
+			}
+		
+		}
+		else
+		{
+		
+			if( Math.floor( Math.random() * 4 ) == 0 )
+			{
+			
+				output += "<div class = 'comment'>";
+				output += "A zombie lunges at you.  It hits, dealing a single heart of damage.";
+				output += "</div>";
+				
+				output = takedamage( output, 1 );
+			
+			}
+			else
+			{
+			
+				output += "<div class = 'comment'>";
+				output += "A zombie lunges at you, but is distracted by a pebble and falters in its attack.";
+				output += "</div>";			
+			
+			}
+		
+		}		
+	
+	}
+
+	return output;
+
+}
+
+function updatepos( ins )
+{
+
+	var mycell = verifycell( playerx, playery );
+	var northcell = verifycell( playerx, playery + 1 );	
+	var eastcell = verifycell( playerx - 1, playery );	
+	var southcell = verifycell( playerx, playery - 1 );	
+	var westcell = verifycell( playerx + 1, playery );		
+
+	var output = ins;
+
+	output += "<div class = 'comment'>";
+	
+	switch( mycell.type )
+	{
+	
+		case 0:
+		{
+		
+			output += "You stand in a reasonably flat plain.";
+		
+		}
+		break;
+	
+		case 1:
+		{
+		
+			output += "You stand aside a small lake.";
+		
+		}
+		break;	
+	
+		case 2:
+		{
+		
+			output += "You stand at the bottom of a canyon running from east to west.  To travel north or south is impossible.";
+		
+		}
+		break;	
+	
+		case 3:
+		{
+		
+			output += "You stand at the bottom of a canyon running from north to south.  To travel east or west is impossible.";
+		
+		}
+		break;		
+	
+		case 4:
+		{
+		
+			output += "You stand atop a medium-sized mountain.";
+		
+		}
+		break;	
+	
+		case 5:
+		{
+		
+			output += "You are in your boat, on the open sea.";
+		
+		}
+		break;	
+	
+	}
+		
+	output += "</div><br/>";
+	
+	var flip = 0;
+	
+	if( mycell.trees > 0 )
+	{
+	
+		output += "<div class = 'comment'>";
+		
+		if( mycell.trees > 1 )
+		{
+		
+			output += "There are " + mycell.trees + " trees around you.";
+			
+		}
+		else
+		{
+		
+			output += "There is a single tree in the area.";		
+		
+		}
+		
+		output += "</div>";
+		
+		flip = 1;
+	
+	}
+	
+	if( mycell.sheep > 0 )
+	{
+	
+		output += "<div class = 'comment'>";
+		
+		if( mycell.sheep > 1 )
+		{
+		
+			output += mycell.sheep + " sheep glance at you wearily before returning to eating grass.";
+			
+		}
+		else
+		{
+		
+			output += "A single sheep looks at you before returning to the green pastures.";
+		
+		}
+		
+		output += "</div>";
+		
+		flip = 1;
+	
+	}	
+	
+	if( mycell.pigs > 0 )
+	{
+	
+		output += "<div class = 'comment'>";
+		
+		if( mycell.pigs > 1 )
+		{
+		
+			output += mycell.pigs + " pigs wander the terrain.";
+			
+		}
+		else
+		{
+		
+			output += "A single pig wanders around.";		
+		
+		}
+		
+		output += "</div>";
+		
+		flip = 1;
+	
+	}
+	
+	if( mycell.stone > 0 )
+	{
+	
+		output += "<div class = 'comment'>";
+		
+		if( mycell.stone > 1 )
+		{
+		
+			output += mycell.stone + " units of stone are available for mining.";
+		
+		}
+		else
+		{
+		
+			output += "One unit of stone sits alone.";
+		
+		}
+		
+		output += "</div>";
+		
+		flip = 1;
+	
+	}	
+	
+	if( mycell.coal > 0 )
+	{
+	
+		output += "<div class = 'comment'>";
+		
+		if( mycell.coal > 1 )
+		{
+		
+			output += mycell.coal + " units of coal are available for mining.";
+			
+		}
+		else
+		{
+		
+			output += "A lone sample of coal is available for mining.";
+		
+		}
+		
+		output += "</div>";
+		
+		flip = 1;
+	
+	}	
+	
+	if( mycell.ore > 0 )
+	{
+	
+		output += "<div class = 'comment'>";
+		
+		if( mycell.ore > 1 )
+		{
+		
+			output += mycell.ore + " units of ore are available for mining.";
+			
+		}
+		else
+		{
+		
+			output += "A single piece of iron ore is available for mining.";
+		
+		}
+		
+		output += "</div>";
+		
+		flip = 1;
+	
+	}	
+	
+	if( mycell.dirt > 0 )
+	{
+	
+		output += "<div class = 'comment'>";
+		
+		if( mycell.dirt > 1 )
+		{
+		
+			output += mycell.dirt + " units of dirt lie beneath your feet.";
+			
+		}
+		else
+		{
+		
+			output += "A single, lone unit of dirt sits beneath your feet.";
+		
+		}
+		
+		output += "</div>";
+		
+		flip = 1;
+	
+	}	
+	
+	if( mycell.sand > 0 )
+	{
+	
+		output += "<div class = 'comment'>";
+		
+		if( mycell.sand > 1 )
+		{
+		
+			output += mycell.sand + " units of sand glisten in the sun.";
+			
+		}
+		else
+		{
+		
+			output += "A single unit of sand glistens in the sun.";
+		
+		}
+		
+		output += "</div>";
+		
+		flip = 1;
+	
+	}	
+	
+	if( flip ) 
+	{
+	
+		output += "<br/>";
+	
+	}
+	
+	output += "<div class = 'comment'>";
+	
+	switch( northcell.type )
+	{
+	
+		case 0:
+		{
+		
+			output += "To the north is a reasonably flat plain.";
+		
+		}
+		break;
+	
+		case 1:
+		{
+		
+			output += "To the north is a small lake.";
+		
+		}
+		break;	
+	
+		case 2:
+		{
+		
+			output += "To the north is a cliff, of a canyon running east to west.  To go north is to fall.";
+		
+		}
+		break;	
+	
+		case 3:
+		{
+		
+			output += "To the north is a canyon running further north.";
+		
+		}
+		break;		
+	
+		case 4:
+		{
+		
+			output += "To the north is a medium sized mountain you could climb.";
+		
+		}
+		break;	
+	
+		case 5:
+		{
+		
+			output += "To the north is open sea.  To sail, you will need a boat.";
+		
+		}
+		break;	
+	
+	}
+	
+	output += "</div>";	
+	
+	output += "<div class = 'comment'>";
+	
+	switch( southcell.type )
+	{
+	
+		case 0:
+		{
+		
+			output += "To the south is a reasonably flat plain.";
+		
+		}
+		break;
+	
+		case 1:
+		{
+		
+			output += "To the south is a small lake.";
+		
+		}
+		break;	
+	
+		case 2:
+		{
+		
+			output += "To the south is a cliff, of a canyon running east to west.  To go south is to fall.";
+		
+		}
+		break;	
+	
+		case 3:
+		{
+		
+			output += "To the south is a canyon running further south.";
+		
+		}
+		break;		
+	
+		case 4:
+		{
+		
+			output += "To the south is a medium sized mountain you could climb.";
+		
+		}
+		break;	
+	
+		case 5:
+		{
+		
+			output += "To the south is open sea.  To sail, you will need a boat.";
+		
+		}
+		break;	
+	
+	}
+	
+	output += "</div>";	
+	
+	output += "<div class = 'comment'>";
+	
+	switch( eastcell.type )
+	{
+	
+		case 0:
+		{
+		
+			output += "To the east is a reasonably flat plain.";
+		
+		}
+		break;
+	
+		case 1:
+		{
+		
+			output += "To the east is a small lake.";
+		
+		}
+		break;	
+	
+		case 2:
+		{
+		
+			output += "To the east is a canyon running further east.";		
+		
+		}
+		break;	
+	
+		case 3:
+		{
+		
+			output += "To the east is a cliff, of a canyon running north to south.  To go east is to fall.";		
+		
+		}
+		break;		
+	
+		case 4:
+		{
+		
+			output += "To the east is a medium sized mountain you could climb.";
+		
+		}
+		break;	
+	
+		case 5:
+		{
+		
+			output += "To the east is open sea.  To sail, you will need a boat.";
+		
+		}
+		break;	
+	
+	}
+	
+	output += "</div>";	
+	
+	output += "<div class = 'comment'>";
+	
+	switch( westcell.type )
+	{
+	
+		case 0:
+		{
+		
+			output += "To the west is a reasonably flat plain.";
+		
+		}
+		break;
+	
+		case 1:
+		{
+		
+			output += "To the west is a small lake.";
+		
+		}
+		break;	
+	
+		case 2:
+		{
+		
+			output += "To the west is a canyon running further west.";
+		
+		}
+		break;	
+	
+		case 3:
+		{
+		
+			output += "To the west is a cliff, of a canyon running north to south.  To go west is to fall.";		
+		
+		}
+		break;		
+	
+		case 4:
+		{
+		
+			output += "To the west is a medium sized mountain you could climb.";
+		
+		}
+		break;	
+	
+		case 5:
+		{
+		
+			output += "To the west is open sea.  To sail, you will need a boat.";
+		
+		}
+		break;	
+	
+	}
+	
+	output += "</div>";		
+	
+	var mine = 0;
+	
+	while( mine < mycell.enemies.length )
+	{
+	
+		switch( mycell.enemies[ mine ].type )
+		{
+		
+			case 0:
+			{
+			
+				output += "<div class = 'comment'>";
+				output += "A skeleton, with " + mycell.enemies[ mine ].health + " hearts looks angrily at you.";
+				output += "</div>";			
+			
+			}
+			break;
+
+			case 1:
+			{
+			
+				output += "<div class = 'comment'>";
+				output += "A zombie, with " + mycell.enemies[ mine ].health + " hearts looks angrily at you.";
+				output += "</div>";			
+			
+			}
+			break;
+			
+		}
+	
+		mine++;
+	
+	}
+	
+	return output;
+
+}
+
+function command()
+{
+
+    var strin = document.getElementById( "textin" ).value.toLowerCase();
+	
+	var compme = "<br/><div class = 'previouscommand'>&nbsp;&gt;&nbsp;";
+	
+	compme += strin;
+	
+	compme += "</div>";
+	
+	var myscan = 0;
+	var cutoff = strin.length;
+	
+	while( myscan < cutoff )
+	{
+	
+		if( ( strin.charAt( myscan ) >= "a" ) && ( strin.charAt( myscan ) <= "z" ) )
+		{
+		
+			break;
+		
+		}
+	
+		myscan++;
+	
+	}
+	
+	if( myscan == cutoff )
+	{
+	
+		compme += "<div class = 'comment'>";
+		
+		compme += "I didn't see any valid text in there...";
+		
+		compme += "</div>";
+	
+	}
+	else
+	{
+	
+		var findstop = myscan;
+		
+		while( findstop < cutoff )
+		{
+		
+			if( ( strin.charAt( findstop ) < "a" ) || ( strin.charAt( findstop ) > "z" ) )
+			{
+			
+				break;
+			
+			}
+		
+			findstop++;
+		
+		}
+		
+		var findalt = findstop;
+		var found = 0;
+		var kill = findstop;
+		
+		if( findstop < cutoff )
+		{
+		
+			while( findalt < cutoff )
+			{
+			
+				if( ( strin.charAt( findalt ) >= "a" ) && ( strin.charAt( findalt ) <= "z" ) )
+				{
+				
+					found = 1;
+				
+					break;
+				
+				}
+			
+				findalt++;
+			
+			}
+			
+			kill = findalt;
+		
+			while( kill < cutoff )
+			{
+			
+				if( ( strin.charAt( kill ) < "a" ) || ( strin.charAt( kill ) > "z" ) )
+				{
+				
+					break;
+				
+				}
+			
+				kill++;
+			
+			}		
+		
+		}
+		
+		if( found )
+		{
+		
+			var verb = strin.substring( myscan, findstop );
+			var noun = strin.substring( findalt, kill );
+			
+			switch( verb )
+			{
+			
+				case "smelt":
+				case "cook":
+				case "fry":
+				case "burn":
+				case "heat":
+				case "toast":
+				case "roast":
+				case "warm":
+				case "process":
+				{
+				
+					if( furnace )
+					{
+					
+						switch( noun )
+						{
+						
+							default:
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "Noun unrecognised.";
+								
+								compme += "</div>";								
+							
+							}
+							break;
+						
+							case "iron":
+							case "ore":
+							case "steel":
+							case "metal":
+							{
+							
+								if( ore > 0 )
+								{
+								
+									if( coal == 0 )
+									{
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "You don't have any coal!";
+										
+										compme += "</div>";										
+									
+									}
+									else
+									{
+									
+										if( coal >= ore )
+										{
+								
+											compme += "<div class = 'comment'>";
+											
+											compme += "You smelt your " + ore + " units of ore to produce a total of " + ( ore + metal ) + " iron bars.";
+											
+											compme += "</div>";									
+											
+											metal += ore;
+											ore = 0;
+											coal -= ore;
+										
+										}	
+										else
+										{
+										
+											compme += "<div class = 'comment'>";
+											
+											compme += "Using the coal you have left, you smelt " + coal + " units of ore to produce a total of " + ( coal + metal ) + " iron bars but leaving " + ( ore - coal ) + " units of ore unprocessed.";
+											
+											compme += "</div>";									
+											
+											metal += coal;
+											ore -= coal;
+											coal = 0;										
+										
+										}
+										
+									}
+								
+								}
+								else
+								{
+								
+									compme += "<div class = 'comment'>";
+									
+									compme += "You don't have any ore to smelt!";
+									
+									compme += "</div>";	
+								
+								}
+							
+							}
+							break;
+						
+						}
+					
+					}
+					else
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						compme += "You don't have a furnace!";
+						
+						compme += "</div>";						
+					
+					}
+				
+				}
+				break;
+			
+				case "craft":
+				case "manufacture":
+				case "make":
+				case "create":
+				case "combine":
+				case "build":
+				{
+				
+					switch( noun )
+					{				
+					
+						case "furnace":
+						case "oven":
+						case "cooker":
+						case "bake":
+						case "toaster":
+						case "smelt":
+						case "smelter":
+						case "heat":
+						case "heater":
+						{
+						
+							if( workbench )
+							{
+
+								if( stone >= 8 )
+								{
+								
+									if( furnace )
+									{
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "You already have a furnace!";
+										
+										compme += "</div>";									
+									
+									}
+									else
+									{
+								
+										compme += "<div class = 'comment'>";
+										
+										compme += "Arranging the eight units of stone, you produce a furnace to smelt ore in.";
+										
+										compme += "</div>";	
+										
+										furnace = 1;
+										stone -= 8;
+										
+									}
+								
+								}
+								else
+								{
+							
+									compme += "<div class = 'comment'>";
+									
+									compme += "You do not have the 8 units of stone required to build the furnace.";
+									
+									compme += "</div>";									
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You cannot make tools or clothes without a workbench.";
+								
+								compme += "</div>";	
+								
+							}						
+						
+						}
+						break;
+					
+						case "boat":
+						case "canoe":
+						case "sail":
+						case "amphibious":
+						case "vessel":
+						case "ark":
+						case "barge":
+						case "flatboat":
+						case "hoy":
+						case "junk":
+						case "longboat":
+						case "gondola":
+						case "lugger":
+						case "motorboat":
+						case "powerboat":
+						case "pontoon":
+						case "riverboat":
+						case "watercraft":
+						case "craft":
+						case "hovercraft":
+						{
+						
+							if( workbench )
+							{
+
+								if( planks >= 5 )
+								{
+								
+									if( boat )
+									{
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "You already have a boat!";
+										
+										compme += "</div>";									
+									
+									}
+									else
+									{
+								
+										compme += "<div class = 'comment'>";
+										
+										compme += "Using five planks of wood, you build a sturdy watercraft.  The oceans are now open to you.";
+										
+										compme += "</div>";	
+										
+										boat = 1;
+										planks -= 5;
+										
+									}
+								
+								}
+								else
+								{
+							
+									compme += "<div class = 'comment'>";
+									
+									compme += "You do not have the 5 planks required to build the boat hull.";
+									
+									compme += "</div>";									
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You cannot make tools or clothes without a workbench.";
+								
+								compme += "</div>";	
+								
+							}
+						
+						}
+						break;
+
+						case "plank":
+						{
+						
+							if( logs > 0 )
+							{
+							
+								planks += 4;
+								logs--;
+						
+								compme += "<div class = 'comment'>";
+								
+								compme += "You break a log in your possession into four planks - you now have " + planks + " planks of wood.";
+								
+								compme += "</div>";	
+								
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "There is nothing on your person that can be used to produce a plank.";
+								
+								compme += "</div>";								
+							
+							}
+						
+						}
+						break;
+					
+						case "planks":
+						case "wood":
+						{
+						
+							if( logs > 0 )
+							{
+							
+								planks += logs * 4;
+								logs = 0;
+						
+								compme += "<div class = 'comment'>";
+								
+								compme += "You break the logs in your possession into planks - you now have " + planks + " planks of wood.";
+								
+								compme += "</div>";	
+								
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "There is nothing on your person that can be used to produce planks.";
+								
+								compme += "</div>";								
+							
+							}
+						
+						}
+						break;
+			
+						case "stick":
+						{
+						
+							if( planks > 0 )
+							{
+							
+								sticks += 2;
+								planks--;
+						
+								compme += "<div class = 'comment'>";
+								
+								compme += "You split one of the planks in your possession into two sticks - you now have " + sticks + " sticks.";
+								
+								compme += "</div>";	
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "There is nothing on your person that can be used to produce a stick.";
+								
+								compme += "</div>";								
+							
+							}
+						
+						}
+						break;			
+						
+						case "sticks":
+						{
+						
+							if( planks > 0 )
+							{
+							
+								sticks += planks * 2;
+								planks = 0;
+						
+								compme += "<div class = 'comment'>";
+								
+								compme += "You split the planks in your possession into sticks - you now have " + sticks + " sticks.";
+								
+								compme += "</div>";	
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "There is nothing on your person that can be used to produce sticks.";
+								
+								compme += "</div>";								
+							
+							}
+						
+						}
+						break;
+					
+						case "workbench":
+						case "table":
+						case "bench":
+						case "toolbox":
+						case "tools":
+						{
+						
+							if( planks >= 4 )
+							{
+							
+								if( workbench == 0 )
+								{
+								
+									planks -= 4;
+									
+									workbench = 1;
+						
+									compme += "<div class = 'comment'>";
+									
+									compme += "From four planks, you conjour a workbench.  This unlocks the crafting of tools and clothing.";
+									
+									compme += "</div>";	
+									
+								}
+								else
+								{
+								
+									compme += "<div class = 'comment'>";
+									
+									compme += "You already have a workbench!";
+									
+									compme += "</div>";									
+								
+								}
+								
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "There is nothing on your person that can be used to produce a workbench.";
+								
+								compme += "</div>";									
+							
+							}
+						
+						}
+						break;
+						
+						case "woodchop":
+						case "woodaxe":
+						case "axe":
+						case "lumberjack":
+						{
+						
+							if( workbench )
+							{
+							
+								if( sticks >= 2 )
+								{
+							
+									if( metal >= 3 )
+									{
+									
+										metal -= 3;
+										sticks -= 2;
+										metalaxes++;
+										
+										if( chopsleft == 0 )
+										{
+										
+											chopsleft = 251;
+											
+											metalaxes--;
+										
+										}
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "Using three iron bars and two sticks, you build an iron woodchopping axe.";
+										
+										compme += "</div>";										
+									
+									}
+									else
+									{
+									
+										if( stone >= 3 )
+										{
+										
+											stone -= 3;
+											sticks -= 2;
+											stoneaxes++;	
+											
+											if( chopsleft == 0 )
+											{
+											
+												chopsleft = 132;
+												stoneaxes--;
+											
+											}									
+										
+											compme += "<div class = 'comment'>";
+											
+											compme += "Using three units of stone and two sticks, you build a stone woodchopping axe.";
+											
+											compme += "</div>";											
+										
+										}
+										else
+										{
+										
+											if( planks >= 3 )
+											{
+											
+												planks -= 3;
+												sticks -= 2;
+												woodaxes++;		
+												
+												if( chopsleft == 0 )
+												{
+												
+													woodaxes--;
+													chopsleft = 60;
+												
+												}									
+											
+												compme += "<div class = 'comment'>";
+												
+												compme += "Using three planks and two sticks, you build a wooden woodchopping axe.";
+												
+												compme += "</div>";												
+											
+											}
+											else
+											{
+											
+												compme += "<div class = 'comment'>";
+												
+												compme += "You have the sticks to make the handle but not the 3 planks/stone/iron required to make the head of your woodchopping axe.";
+												
+												compme += "</div>";												
+											
+											}
+										
+										}
+									
+									}
+								
+								}
+								else
+								{
+								
+									compme += "<div class = 'comment'>";
+									
+									compme += "You do not have the sticks required to build the axe's handle.";
+									
+									compme += "</div>";									
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You cannot make tools or clothes without a workbench.";
+								
+								compme += "</div>";	
+							
+							}
+						
+						}
+						break;					
+
+						case "sword":
+						case "blade":						
+						case "weapon":						
+						{
+						
+							if( workbench )
+							{
+							
+								if( sticks >= 1 )
+								{
+							
+									if( metal >= 2 )
+									{
+									
+										metal -= 2;
+										sticks--;
+										metalswords++;
+										
+										if( slashesleft == 0 )
+										{
+										
+											slashesleft = 251;
+											
+											metalswords--;
+										
+										}
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "Using two iron bars and a stick, you build an iron sword.";
+										
+										compme += "</div>";										
+									
+									}
+									else
+									{
+									
+										if( stone >= 2 )
+										{
+										
+											stone-=2;
+											sticks--;
+											stoneswords++;	
+											
+											if( slashesleft == 0 )
+											{
+											
+												slashesleft = 132;
+												stoneswords--;
+											
+											}									
+										
+											compme += "<div class = 'comment'>";
+											
+											compme += "Using two units of stone and a stick, you build a stone sword.";
+											
+											compme += "</div>";											
+										
+										}
+										else
+										{
+										
+											if( planks >= 2 )
+											{
+											
+												planks -= 2;
+												sticks--;
+												woodswords++;		
+												
+												if( slashesleft == 0 )
+												{
+												
+													woodswords--;
+													slashesleft = 60;
+												
+												}									
+											
+												compme += "<div class = 'comment'>";
+												
+												compme += "Using two planks and a stick, you build a wooden sword.";
+												
+												compme += "</div>";												
+											
+											}
+											else
+											{
+											
+												compme += "<div class = 'comment'>";
+												
+												compme += "You have the sticks to make the handle but not the 2 planks/stone/iron required to make the blade of your sword.";
+												
+												compme += "</div>";												
+											
+											}
+										
+										}
+									
+									}
+								
+								}
+								else
+								{
+								
+									compme += "<div class = 'comment'>";
+									
+									compme += "You do not have the sticks required to build the sword's handle.";
+									
+									compme += "</div>";									
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You cannot make tools or clothes without a workbench.";
+								
+								compme += "</div>";	
+							
+							}
+						
+						}
+						break;
+
+						case "spade":
+						case "shovel":
+						case "trowel":
+						{
+						
+							if( workbench )
+							{
+							
+								if( sticks >= 2 )
+								{
+							
+									if( metal >= 3 )
+									{
+									
+										metal--;
+										sticks -= 2;
+										metalspades++;
+										
+										if( shovelsleft == 0 )
+										{
+										
+											shovelsleft = 251;
+											
+											metalspades--;
+										
+										}
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "Using an iron bar and two sticks, you build an iron spade.";
+										
+										compme += "</div>";										
+									
+									}
+									else
+									{
+									
+										if( stone >= 3 )
+										{
+										
+											stone--;
+											sticks -= 2;
+											stonespades++;	
+											
+											if( shovelsleft == 0 )
+											{
+											
+												shovelsleft = 132;
+												stonespades--;
+											
+											}									
+										
+											compme += "<div class = 'comment'>";
+											
+											compme += "Using an unit of stone and two sticks, you build a stone spade.";
+											
+											compme += "</div>";											
+										
+										}
+										else
+										{
+										
+											if( planks >= 3 )
+											{
+											
+												planks--;
+												sticks -= 2;
+												woodspades++;		
+												
+												if( shovelsleft == 0 )
+												{
+												
+													woodspades--;
+													shovelsleft = 60;
+												
+												}									
+											
+												compme += "<div class = 'comment'>";
+												
+												compme += "Using a plank and two sticks, you build a wooden spade.";
+												
+												compme += "</div>";												
+											
+											}
+											else
+											{
+											
+												compme += "<div class = 'comment'>";
+												
+												compme += "You have the sticks to make the handle but not the planks/stone/iron required to make the head of your spade.";
+												
+												compme += "</div>";												
+											
+											}
+										
+										}
+									
+									}
+								
+								}
+								else
+								{
+								
+									compme += "<div class = 'comment'>";
+									
+									compme += "You do not have the sticks required to build the spade's handle.";
+									
+									compme += "</div>";									
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You cannot make tools or clothes without a workbench.";
+								
+								compme += "</div>";	
+							
+							}
+						
+						}
+						break;	
+
+						case "pick":
+						case "pickaxe":
+						{
+						
+							if( workbench )
+							{
+							
+								if( sticks >= 2 )
+								{
+							
+									if( metal >= 3 )
+									{
+									
+										metal -= 3;
+										sticks -= 2;
+										metalpicks++;
+										
+										if( picksleft == 0 )
+										{
+										
+											metalpicks--;
+											picksleft = 251;
+										
+										}
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "Using three iron bars and two sticks, you build an iron pickaxe.";
+										
+										compme += "</div>";										
+									
+									}
+									else
+									{
+									
+										if( stone >= 3 )
+										{
+										
+											stone -= 3;
+											sticks -= 2;
+											stonepicks++;	
+											
+											if( picksleft == 0 )
+											{
+											
+												picksleft = 132;
+												stonepicks--;
+											
+											}									
+										
+											compme += "<div class = 'comment'>";
+											
+											compme += "Using three units of stone and two sticks, you build a stone pickaxe.";
+											
+											compme += "</div>";											
+										
+										}
+										else
+										{
+										
+											if( planks >= 3 )
+											{
+											
+												planks -= 3;
+												sticks -= 2;
+												woodpicks++;	
+												
+												if( picksleft == 0 )
+												{
+												
+													picksleft = 60;
+													woodpicks--;
+												
+												}										
+											
+												compme += "<div class = 'comment'>";
+												
+												compme += "Using three planks and two sticks, you build a wooden pickaxe.";
+												
+												compme += "</div>";												
+											
+											}
+											else
+											{
+											
+												compme += "<div class = 'comment'>";
+												
+												compme += "You have the sticks to make the handle but not the 3 planks/stone/iron required to make the head of your pickaxe.";
+												
+												compme += "</div>";												
+											
+											}
+										
+										}
+									
+									}
+								
+								}
+								else
+								{
+								
+									compme += "<div class = 'comment'>";
+									
+									compme += "You do not have the sticks required to build the pickaxe's handle.";
+									
+									compme += "</div>";									
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You cannot make tools or clothes without a workbench.";
+								
+								compme += "</div>";	
+							
+							}
+						
+						}
+						break;					
+					
+						default:
+						{
+						
+							compme += "<div class = 'comment'>";
+							
+							compme += "You don't know how to make a " + noun + "!";
+							
+							compme += "</div>";	
+						
+						}
+						break;
+					
+					}
+				
+				}
+				break;
+				
+				case "attack":
+				case "harvest":
+				case "collect":
+				case "take":
+				case "break":
+				case "punch":
+				case "slash":
+				case "assault":
+				case "thump":
+				case "kapow":
+				case "crunch":
+				case "crush":
+				case "crack":
+				case "bash":
+				case "kill":
+				{
+				
+					var cell = verifycell( playerx, playery );
+				
+					switch( noun )
+					{
+					
+						default:
+						{
+						
+							compme += "<div class = 'comment'>";
+							
+							compme += "Noun unrecognised.";
+							
+							compme += "</div>";								
+						
+						}
+						break;	
+						
+						case "pig":
+						{
+						
+							if( cell.pigs > 0 )
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "The pig grunts its last grunt and falls, never to hop happily around the emerald fields... but at least you got bacon!";
+								
+								compme += "</div>";	
+								
+								pork++;
+								cell.pigs--;
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "If there were any pigs outside of your imagination, this would look a little less embarrasing.";
+								
+								compme += "</div>";								
+							
+							}
+						
+						}
+						break;
+						
+						case "sheep":
+						{
+						
+							if( cell.sheep > 0 )
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You take wool from the sheep's corpse.";
+								
+								compme += "</div>";	
+								
+								wool++;
+								cell.sheep--;
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "If there were any sheep outside of your imagination, this would look a little less embarrasing.";
+								
+								compme += "</div>";								
+							
+							}
+						
+						}
+						break;						
+						
+						case "skeleton":
+						{
+						
+							var mine = 0;
+							var flip = 0;
+							
+							while( mine < cell.enemies.length )
+							{
+							
+								if( cell.enemies[ mine ].type == 0 )
+								{
+								
+									if( Math.floor( Math.random() * 2 ) == 0 )
+									{
+																		
+										if( slashesleft > 0 )
+										{
+										
+											compme += "<div class = 'comment'>";
+											compme += "You hit the skeleton with your sword for two hearts.";
+											compme += "</div>";
+											
+											cell.enemies[ mine ].health -= 2;
+										
+											slashesleft--;										
+											
+											if( slashesleft == 0 )
+											{
+											
+												compme += "<div class = 'comment'>";
+									
+												compme += "Your sword, pitted and worn with the toil of battle, crumbles into dust in your hand.";
+												
+												compme += "</div>";												
+											
+												if( metalswords > 0 )
+												{
+												
+													compme += "<div class = 'comment'>";
+										
+													compme += "You switch to the iron sword in your inventory.";
+													
+													compme += "</div>";												
+												
+													metalswords--;
+													slashesleft = 251;
+												
+												}
+												else
+												{
+												
+													if( stoneswords > 0 )
+													{
+													
+														compme += "<div class = 'comment'>";
+											
+														compme += "You switch to the stone sword in your inventory.";
+														
+														compme += "</div>";													
+													
+														stoneswords--;
+														slashesleft = 132;
+													
+													}
+													else
+													{
+													
+														if( woodswords > 0 )
+														{
+														
+															compme += "<div class = 'comment'>";
+												
+															compme += "You switch to the wooden sword in your inventory.";
+															
+															compme += "</div>";														
+														
+															woodswords--;
+															slashesleft = 60;
+														
+														}
+													
+													}
+												
+												}
+											
+											}										
+											else
+											{
+											
+												compme += "<div class = 'comment'>";
+									
+												compme += "Your sword has a further " + slashesleft + " attacks left before it disintergrates.";
+												
+												compme += "</div>";												
+											
+											}												
+											
+										}
+										else
+										{
+										
+											compme += "<div class = 'comment'>";
+											compme += "You hit the skeleton with your bare hands for a single heart.";
+											compme += "</div>";
+											
+											cell.enemies[ mine ].health--;
+										
+										}
+										
+										if( cell.enemies[ mine ].health <= 0 )
+										{
+										
+											compme += "<div class = 'comment'>";
+											compme += "The skeleton was destroyed!";
+											compme += "</div>";		
+											
+											cell.enemies.splice( mine, 1 );									
+										
+										}										
+									
+									}
+									else
+									{
+										
+										compme += "<div class = 'comment'>";
+										
+										compme += "You missed the skeleton.";
+										
+										compme += "</div>";											
+									
+									}
+									
+									flip = 1;
+								
+									break;
+								
+								}
+							
+								mine++;
+							
+							}
+							
+							if( flip == 0 )
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "There are no skeletons here!";
+								
+								compme += "</div>";								
+							
+							}
+						
+						}
+						break;
+						
+						case "zombie":				
+						{
+						
+							var mine = 0;
+							var flip = 0;
+							
+							while( mine < cell.enemies.length )
+							{
+							
+								if( cell.enemies[ mine ].type == 1 )
+								{
+								
+									if( Math.floor( Math.random() * 2 ) == 0 )
+									{
+																		
+										if( slashesleft > 0 )
+										{
+										
+											compme += "<div class = 'comment'>";
+											compme += "You hit the zombie with your sword for two hearts.";
+											compme += "</div>";
+											
+											cell.enemies[ mine ].health -= 2;
+										
+											slashesleft--;										
+											
+											if( slashesleft == 0 )
+											{
+											
+												compme += "<div class = 'comment'>";
+									
+												compme += "Your sword, pitted and worn with the toil of battle, crumbles into dust in your hand.";
+												
+												compme += "</div>";												
+											
+												if( metalswords > 0 )
+												{
+												
+													compme += "<div class = 'comment'>";
+										
+													compme += "You switch to the iron sword in your inventory.";
+													
+													compme += "</div>";												
+												
+													metalswords--;
+													slashesleft = 251;
+												
+												}
+												else
+												{
+												
+													if( stoneswords > 0 )
+													{
+													
+														compme += "<div class = 'comment'>";
+											
+														compme += "You switch to the stone sword in your inventory.";
+														
+														compme += "</div>";													
+													
+														stoneswords--;
+														slashesleft = 132;
+													
+													}
+													else
+													{
+													
+														if( woodswords > 0 )
+														{
+														
+															compme += "<div class = 'comment'>";
+												
+															compme += "You switch to the wooden sword in your inventory.";
+															
+															compme += "</div>";														
+														
+															woodswords--;
+															slashesleft = 60;
+														
+														}
+													
+													}
+												
+												}
+											
+											}
+											else
+											{
+											
+												compme += "<div class = 'comment'>";
+									
+												compme += "Your sword has a further " + slashesleft + " attacks left before it disintergrates.";
+												
+												compme += "</div>";												
+											
+											}										
+											
+										}
+										else
+										{
+										
+											compme += "<div class = 'comment'>";
+											compme += "You hit the zombie with your bare hands for a single heart.";
+											compme += "</div>";
+											
+											cell.enemies[ mine ].health--;
+										
+										}
+										
+										if( cell.enemies[ mine ].health <= 0 )
+										{
+										
+											compme += "<div class = 'comment'>";
+											compme += "The zombie was destroyed!";
+											compme += "</div>";		
+											
+											cell.enemies.splice( mine, 1 );									
+										
+										}										
+									
+									}
+									else
+									{
+										
+										compme += "<div class = 'comment'>";
+										
+										compme += "You missed the zombie.";
+										
+										compme += "</div>";											
+									
+									}
+									
+									flip = 1;
+								
+									break;
+								
+								}
+							
+								mine++;
+							
+							}
+							
+							if( flip == 0 )
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "There are no zombies here!";
+								
+								compme += "</div>";								
+							
+							}
+						
+						}
+						break;					
+					
+						case "dirt":
+						case "grass":
+						case "mud":
+						case "ground":
+						case "earth":
+						case "muck":
+						{
+						
+							if( cell.dirt > 0 )
+							{
+							
+								while( cell.dirt > 0 )
+								{
+								
+									if( shovelsleft > 0 )
+									{
+									
+										if( cell.dirt <= shovelsleft )
+										{
+										
+											compme += "<div class = 'comment'>";
+								
+											compme += "Using your spade, you dig up " + cell.dirt + " samples of dirt, leaving a further " + ( shovelsleft - cell.dirt ) + " uses of your spade.";
+											
+											compme += "</div>";											
+										
+											dirt += cell.dirt;
+											shovelsleft -= cell.dirt;
+											cell.dirt = 0;
+										
+										}
+										else
+										{
+										
+											compme += "<div class = 'comment'>";
+								
+											compme += "Using your spade, you dig up "  + shovelsleft + " samples of dirt, leaving " + ( cell.dirt - shovelsleft ) + " samples, and wearing out your spade.";
+											
+											compme += "</div>";											
+										
+											dirt += shovelsleft;
+											cell.dirt -= shovelsleft;
+											shovelsleft = 0;
+										
+										}
+										
+										if( shovelsleft == 0 )
+										{
+										
+											if( metalspades > 0 )
+											{
+											
+												compme += "<div class = 'comment'>";
+									
+												compme += "You switch to the iron spade in your inventory.";
+												
+												compme += "</div>";												
+											
+												metalspades--;
+												shovelsleft = 251;
+											
+											}
+											else
+											{
+											
+												if( stonespades > 0 )
+												{
+												
+													compme += "<div class = 'comment'>";
+										
+													compme += "You switch to the stone spade in your inventory.";
+													
+													compme += "</div>";													
+												
+													stonespades--;
+													shovelsleft = 132;
+												
+												}
+												else
+												{
+												
+													if( woodspades > 0 )
+													{
+													
+														compme += "<div class = 'comment'>";
+											
+														compme += "You switch to the wooden spade in your inventory.";
+														
+														compme += "</div>";														
+													
+														woodspades--;
+														shovelsleft = 60;
+													
+													}
+												
+												}
+											
+											}
+										
+										}
+									
+									}
+									else
+									{
+									
+										compme += "<div class = 'comment'>";
+							
+										compme += "You cannot dig up dirt without a spade.";
+										
+										compme += "</div>";	
+										
+										break;
+									
+									}
+									
+									compme += "<div class = 'comment'>";
+						
+									compme += "You now have " + dirt + " samples of dirt in your inventory.";
+									
+									compme += "</div>";										
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You make a complete fool of yourself as you attempt to dig up dirt that does not exist.";
+								
+								compme += "</div>";	
+							
+							}						
+						
+						}
+						break;
+					
+						case "steel":
+						case "iron":
+						case "metal":
+						case "ore":
+						{
+						
+							if( cell.ore > 0 )
+							{
+							
+								while( cell.ore > 0 )
+								{
+								
+									if( picksleft > 0 )
+									{
+									
+										if( cell.ore <= picksleft )
+										{
+										
+											compme += "<div class = 'comment'>";
+								
+											compme += "Using your pickaxe, you extract " + cell.ore + " samples of ore, leaving a further " + ( picksleft - cell.ore ) + " uses of your pickaxe.";
+											
+											compme += "</div>";											
+										
+											ore += cell.ore;
+											picksleft -= cell.ore;
+											cell.ore = 0;
+										
+										}
+										else
+										{
+										
+											compme += "<div class = 'comment'>";
+								
+											compme += "Using your pickaxe, you extract "  + picksleft + " samples of ore, leaving " + ( cell.ore - picksleft ) + " samples, and wearing out your pickaxe.";
+											
+											compme += "</div>";											
+										
+											ore += picksleft;
+											cell.ore -= picksleft;
+											picksleft = 0;
+										
+										}
+										
+										if( picksleft == 0 )
+										{
+										
+											if( metalpicks > 0 )
+											{
+											
+												compme += "<div class = 'comment'>";
+									
+												compme += "You switch to the iron pick in your inventory.";
+												
+												compme += "</div>";												
+											
+												metalpicks--;
+												picksleft = 251;
+											
+											}
+											else
+											{
+											
+												if( stonepicks > 0 )
+												{
+												
+													compme += "<div class = 'comment'>";
+										
+													compme += "You switch to the stone pick in your inventory.";
+													
+													compme += "</div>";													
+												
+													stonepicks--;
+													picksleft = 132;
+												
+												}
+												else
+												{
+												
+													if( woodpicks > 0 )
+													{
+													
+														compme += "<div class = 'comment'>";
+											
+														compme += "You switch to the wooden pickaxe in your inventory.";
+														
+														compme += "</div>";														
+													
+														woodpicks--;
+														picksleft = 60;
+													
+													}
+												
+												}
+											
+											}
+										
+										}
+									
+									}
+									else
+									{
+									
+										compme += "<div class = 'comment'>";
+							
+										compme += "You cannot extract iron ore without a pickaxe.";
+										
+										compme += "</div>";	
+									
+									}
+									
+									compme += "<div class = 'comment'>";
+						
+									compme += "You now have " + ore + " samples of iron in your inventory.";
+									
+									compme += "</div>";										
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You make a complete fool of yourself as you attempt to mine an ore that does not exist.";
+								
+								compme += "</div>";	
+							
+							}
+						
+						}
+						break;						
+					
+						case "stone":
+						case "rock":
+						case "cobblestone":
+						case "rubble":
+						{
+						
+							if( cell.stone > 0 )
+							{
+							
+								while( cell.stone > 0 )
+								{
+								
+									if( picksleft > 0 )
+									{
+									
+										if( cell.stone <= picksleft )
+										{
+										
+											compme += "<div class = 'comment'>";
+								
+											compme += "Using your pickaxe, you extract " + cell.stone + " units of stone, leaving a further " + ( picksleft - cell.stone ) + " uses of your pickaxe.";
+											
+											compme += "</div>";											
+										
+											stone += cell.stone;
+											picksleft -= cell.stone;
+											cell.stone = 0;
+										
+										}
+										else
+										{
+										
+											compme += "<div class = 'comment'>";
+								
+											compme += "Using your pickaxe, you extract "  + picksleft + " units of stone, leaving " + ( cell.stone - picksleft ) + " samples, and wearing out your pickaxe.";
+											
+											compme += "</div>";											
+										
+											stone += picksleft;
+											cell.stone -= picksleft;
+											picksleft = 0;
+										
+										}
+										
+										if( picksleft == 0 )
+										{
+										
+											if( metalpicks > 0 )
+											{
+											
+												compme += "<div class = 'comment'>";
+									
+												compme += "You switch to the iron pick in your inventory.";
+												
+												compme += "</div>";												
+											
+												metalpicks--;
+												picksleft = 251;
+											
+											}
+											else
+											{
+											
+												if( stonepicks > 0 )
+												{
+												
+													compme += "<div class = 'comment'>";
+										
+													compme += "You switch to the stone pick in your inventory.";
+													
+													compme += "</div>";													
+												
+													stonepicks--;
+													picksleft = 132;
+												
+												}
+												else
+												{
+												
+													if( woodpicks > 0 )
+													{
+													
+														compme += "<div class = 'comment'>";
+											
+														compme += "You switch to the wooden pickaxe in your inventory.";
+														
+														compme += "</div>";														
+													
+														woodpicks--;
+														picksleft = 60;
+													
+													}
+												
+												}
+											
+											}
+										
+										}
+									
+									}
+									else
+									{
+									
+										compme += "<div class = 'comment'>";
+							
+										compme += "You cannot extract stone without a pickaxe.";
+										
+										compme += "</div>";	
+									
+									}
+									
+									compme += "<div class = 'comment'>";
+						
+									compme += "You now have " + stone + " units of stone in your inventory.";
+									
+									compme += "</div>";										
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You make a complete fool of yourself as you attempt to mine stone that does not exist.";
+								
+								compme += "</div>";	
+							
+							}
+						
+						}
+						break;						
+					
+						case "coal":
+						case "blackgold":
+						{
+						
+							if( cell.coal > 0 )
+							{
+							
+								while( cell.coal > 0 )
+								{
+								
+									if( picksleft > 0 )
+									{
+									
+										if( cell.coal <= picksleft )
+										{
+										
+											compme += "<div class = 'comment'>";
+								
+											compme += "Using your pickaxe, you extract " + cell.coal + " samples of coal, leaving a further " + ( picksleft - cell.coal ) + " uses of your pickaxe.";
+											
+											compme += "</div>";											
+										
+											coal += cell.coal;
+											picksleft -= cell.coal;
+											cell.coal = 0;
+										
+										}
+										else
+										{
+										
+											compme += "<div class = 'comment'>";
+								
+											compme += "Using your pickaxe, you extract "  + picksleft + " samples of coal, leaving " + ( cell.coal - picksleft ) + " samples, and wearing out your pickaxe.";
+											
+											compme += "</div>";											
+										
+											coal += picksleft;
+											cell.coal -= picksleft;
+											picksleft = 0;
+										
+										}
+										
+										if( picksleft == 0 )
+										{
+										
+											if( metalpicks > 0 )
+											{
+											
+												compme += "<div class = 'comment'>";
+									
+												compme += "You switch to the iron pick in your inventory.";
+												
+												compme += "</div>";												
+											
+												metalpicks--;
+												picksleft = 251;
+											
+											}
+											else
+											{
+											
+												if( stonepicks > 0 )
+												{
+												
+													compme += "<div class = 'comment'>";
+										
+													compme += "You switch to the stone pick in your inventory.";
+													
+													compme += "</div>";													
+												
+													stonepicks--;
+													picksleft = 132;
+												
+												}
+												else
+												{
+												
+													if( woodpicks > 0 )
+													{
+													
+														compme += "<div class = 'comment'>";
+											
+														compme += "You switch to the wooden pickaxe in your inventory.";
+														
+														compme += "</div>";														
+													
+														woodpicks--;
+														picksleft = 60;
+													
+													}
+												
+												}
+											
+											}
+										
+										}
+									
+									}
+									else
+									{
+									
+										compme += "<div class = 'comment'>";
+							
+										compme += "You cannot extract coal without a pickaxe.";
+										
+										compme += "</div>";	
+									
+									}
+									
+									compme += "<div class = 'comment'>";
+						
+									compme += "You now have " + coal + " samples of coal in your inventory.";
+									
+									compme += "</div>";										
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You make a complete fool of yourself as you attempt to mine coal that does not exist.";
+								
+								compme += "</div>";	
+							
+							}
+						
+						}
+						break;						
+					
+						case "tree":
+						case "trees":
+						case "forest":
+						case "wood":
+						case "woods":
+						{
+						
+							if( cell.trees > 0 )
+							{
+							
+								while( cell.trees > 0 )
+								{
+								
+									if( chopsleft > 0 )
+									{
+									
+										if( cell.trees <= chopsleft )
+										{
+										
+											compme += "<div class = 'comment'>";
+								
+											compme += "Using your axe, you chop down " + cell.trees + " trees, leaving a further " + ( chopsleft - cell.trees ) + " uses of your axe.";
+											
+											compme += "</div>";											
+										
+											logs += cell.trees;
+											chopsleft -= cell.trees;
+											cell.trees = 0;
+										
+										}
+										else
+										{
+										
+											compme += "<div class = 'comment'>";
+								
+											compme += "Using your axe, you chop down "  + chopsleft + " trees, but leaving " + ( cell.trees - chopsleft ) + " trees, and wearing out your axe.";
+											
+											compme += "</div>";											
+										
+											logs += chopsleft;
+											cell.trees -= chopsleft;
+											chopsleft = 0;
+										
+										}
+										
+										if( chopsleft == 0 )
+										{
+										
+											if( metalaxes > 0 )
+											{
+											
+												compme += "<div class = 'comment'>";
+									
+												compme += "You switch to the iron axe in your inventory.";
+												
+												compme += "</div>";												
+											
+												metalaxes--;
+												chopsleft = 251;
+											
+											}
+											else
+											{
+											
+												if( stoneaxes > 0 )
+												{
+												
+													compme += "<div class = 'comment'>";
+										
+													compme += "You switch to the stone axe in your inventory.";
+													
+													compme += "</div>";													
+												
+													stoneaxes--;
+													chopsleft = 132;
+												
+												}
+												else
+												{
+												
+													if( woodaxes > 0 )
+													{
+													
+														compme += "<div class = 'comment'>";
+											
+														compme += "You switch to the wooden axe in your inventory.";
+														
+														compme += "</div>";														
+													
+														woodaxes--;
+														chopsleft = 60;
+													
+													}
+												
+												}
+											
+											}
+										
+										}
+									
+									}
+									else
+									{
+									
+										compme += "<div class = 'comment'>";
+							
+										compme += "Having no tools, you break the remaining trees with your bare hands.  It takes a while but the material is collected.";
+										
+										compme += "</div>";	
+										
+										logs += cell.trees;
+										cell.trees = 0;
+									
+									}
+									
+									compme += "<div class = 'comment'>";
+						
+									compme += "You now have " + logs + " logs in your inventory.";
+									
+									compme += "</div>";										
+								
+								}
+							
+							}
+							else
+							{
+							
+								compme += "<div class = 'comment'>";
+								
+								compme += "You make a complete fool of yourself as you attempt to damage a tree that does not exist.";
+								
+								compme += "</div>";	
+							
+							}
+						
+						}
+						break;
+					
+					}
+					
+					compme = updateenemies( compme );					
+				
+				}
+				break;
+				
+				default:
+				{
+				
+					compme += "<div class = 'comment'>";
+					
+					compme += "The verb specified was not recognised.";
+					
+					compme += "</div>";	
+					
+					compme = updateenemies( compme );				
+				
+				}
+				break;
+			
+			}			
+		
+		}
+		else
+		{
+		
+			var verb = strin.substring( myscan, findstop );
+			
+			switch( verb )
+			{
+			
+				case "north":
+				case "n":
+				case "up":
+				case "u":
+				{
+				
+					switch( verifycell( playerx, playery ).type )
+					{
+					
+						case 2:
+						{
+						
+							compme += "<div class = 'comment'>";
+							
+							compme += "You cannot go that way; the canyon wall is blocking you.";
+							
+							compme += "</div>";						
+						
+						}
+						break;
+						
+						default:
+						{
+						
+							switch( verifycell( playerx, playery + 1 ).type )
+							{
+							
+								case 2:
+								{	
+								
+									compme += "<div class = 'comment'>";
+									
+									compme += "You move north, flying forth from the canyon's edge like the fabled lemming.";
+									
+									compme += "</div>";
+									
+									playery++;
+									
+									compme = updatepos( compme );		
+									
+									compme = takedamage( compme, 3 );					
+								
+								}
+								break;
+								
+								case 5:
+								{
+								
+									if( boat )
+									{
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "You sail north.";
+										
+										compme += "</div>";									
+									
+										playery++;
+										
+										compme = updatepos( compme );									
+									
+									}
+									else
+									{
+								
+										compme += "<div class = 'comment'>";
+										
+										compme += "You face the open sea.  Without a boat, you are powerless to cross it.";
+										
+										compme += "</div>";		
+										
+									}						
+								
+								}
+								break;	
+								
+								default:
+								{				
+						
+									compme += "<div class = 'comment'>";
+									
+									compme += "You move north.";
+									
+									compme += "</div>";
+									
+									playery++;
+									
+									compme = updatepos( compme );	
+									
+								}
+								break;
+								
+							}					
+						
+						}
+						break;
+					
+					}
+				
+				}
+				break;
+			
+				case "south":
+				case "s":
+				case "down":
+				case "d":
+				{
+				
+					switch( verifycell( playerx, playery ).type )
+					{
+					
+						case 2:
+						{
+						
+							compme += "<div class = 'comment'>";
+							
+							compme += "You cannot go that way; the canyon wall is blocking you.";
+							
+							compme += "</div>";						
+						
+						}
+						break;
+						
+						default:
+						{
+						
+							switch( verifycell( playerx, playery - 1 ).type )
+							{
+							
+								case 2:
+								{	
+								
+									compme += "<div class = 'comment'>";
+									
+									compme += "You move south, flying forth from the canyon's edge like the fabled lemming.";
+									
+									compme += "</div>";
+									
+									playery--;
+									
+									compme = updatepos( compme );		
+									
+									compme = takedamage( compme, 3 );					
+								
+								}
+								break;
+								
+								case 5:
+								{
+								
+									if( boat )
+									{
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "You sail south.";
+										
+										compme += "</div>";									
+									
+										playery--;
+										
+										compme = updatepos( compme );									
+									
+									}
+									else
+									{
+								
+										compme += "<div class = 'comment'>";
+										
+										compme += "You face the open sea.  Without a boat, you are powerless to cross it.";
+										
+										compme += "</div>";		
+										
+									}								
+								
+								}
+								break;	
+								
+								default:
+								{				
+						
+									compme += "<div class = 'comment'>";
+									
+									compme += "You move south.";
+									
+									compme += "</div>";
+									
+									playery--;
+									
+									compme = updatepos( compme );	
+									
+								}
+								break;
+								
+							}					
+						
+						}
+						break;
+					
+					}
+				
+				}
+				break;			
+			
+				case "east":
+				case "e":
+				case "left":
+				case "l":
+				{
+				
+					switch( verifycell( playerx, playery ).type )
+					{
+					
+						case 3:
+						{
+						
+							compme += "<div class = 'comment'>";
+							
+							compme += "You cannot go that way; the canyon wall is blocking you.";
+							
+							compme += "</div>";						
+						
+						}
+						break;
+						
+						default:
+						{
+						
+							switch( verifycell( playerx - 1, playery ).type )
+							{
+							
+								case 3:
+								{	
+								
+									compme += "<div class = 'comment'>";
+									
+									compme += "You move east, flying forth from the canyon's edge like the fabled lemming.";
+									
+									compme += "</div>";
+									
+									playerx--;
+									
+									compme = updatepos( compme );		
+									
+									compme = takedamage( compme, 3 );					
+								
+								}
+								break;
+								
+								case 5:
+								{
+								
+									if( boat )
+									{
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "You sail east.";
+										
+										compme += "</div>";									
+									
+										playerx--;
+										
+										compme = updatepos( compme );									
+									
+									}
+									else
+									{
+								
+										compme += "<div class = 'comment'>";
+										
+										compme += "You face the open sea.  Without a boat, you are powerless to cross it.";
+										
+										compme += "</div>";		
+										
+									}							
+								
+								}
+								break;	
+								
+								default:
+								{				
+						
+									compme += "<div class = 'comment'>";
+									
+									compme += "You move east.";
+									
+									compme += "</div>";
+									
+									playerx--;
+									
+									compme = updatepos( compme );	
+									
+								}
+								break;
+								
+							}					
+						
+						}
+						break;
+					
+					}
+				
+				}
+				break;			
+			
+				case "west":
+				case "w":
+				case "right":
+				case "r":
+				{
+				
+					switch( verifycell( playerx, playery ).type )
+					{
+					
+						case 3:
+						{
+						
+							compme += "<div class = 'comment'>";
+							
+							compme += "You cannot go that way; the canyon wall is blocking you.";
+							
+							compme += "</div>";						
+						
+						}
+						break;
+						
+						default:
+						{
+						
+							switch( verifycell( playerx + 1, playery ).type )
+							{
+							
+								case 3:
+								{	
+								
+									compme += "<div class = 'comment'>";
+									
+									compme += "You move west, flying forth from the canyon's edge like the fabled lemming.";
+									
+									compme += "</div>";
+									
+									playerx++;
+									
+									compme = updatepos( compme );		
+									
+									compme = takedamage( compme, 3 );					
+								
+								}
+								break;
+								
+								case 5:
+								{
+								
+									if( boat )
+									{
+									
+										compme += "<div class = 'comment'>";
+										
+										compme += "You sail west.";
+										
+										compme += "</div>";										
+									
+										playerx++;
+										
+										compme = updatepos( compme );									
+									
+									}
+									else
+									{
+								
+										compme += "<div class = 'comment'>";
+										
+										compme += "You face the open sea.  Without a boat, you are powerless to cross it.";
+										
+										compme += "</div>";		
+										
+									}							
+								
+								}
+								break;	
+								
+								default:
+								{				
+						
+									compme += "<div class = 'comment'>";
+									
+									compme += "You move west.";
+									
+									compme += "</div>";
+									
+									playerx++;
+									
+									compme = updatepos( compme );	
+									
+								}
+								break;
+								
+							}					
+						
+						}
+						break;
+					
+					}
+				
+				}
+				break;		
+				
+				case "eat":
+				{
+				
+					if( pork > 0 )
+					{
+					
+						if( hearts < 16 )
+						{
+					
+							compme += "<div class = 'comment'>";
+							
+							compme += "It's delicious!  Two hearts restored.";
+							
+							compme += "</div>";							
+							
+							pork--;
+							hearts += 2;
+						
+						}
+						else
+						{
+						
+							compme += "<div class = 'comment'>";
+							
+							compme += "You're already full.";
+							
+							compme += "</div>";								
+						
+						}
+					
+					}
+					else
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						compme += "You decide to against resorting to cannibalism.";
+						
+						compme += "</div>";						
+						
+					}
+				
+				}
+				break;
+				
+				case "inventory":
+				case "bag":
+				case "satchel":
+				case "item":
+				case "items":
+				case "list":
+				case "pack":
+				case "backpack":
+				{
+				
+					var flip = 0;
+				
+					if( workbench )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						compme += "You have a workbench.";
+						
+						compme += "</div>";	
+						
+						flip = 1;					
+					
+					}
+					
+					if( boat )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						compme += "You have a boat.";
+						
+						compme += "</div>";	
+						
+						flip = 1;					
+					
+					}
+					
+					if( furnace )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						compme += "You have a furnace.";
+						
+						compme += "</div>";	
+						
+						flip = 1;					
+					
+					}
+				
+					if( woodaxes )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( woodaxes == 1 )
+						{
+						
+							compme += "You have a wooden axe.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + woodaxes + " wooden axes.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( stoneaxes )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( stoneaxes == 1 )
+						{
+						
+							compme += "You have a stone axe.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + stoneaxes + " stone axes.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}					
+				
+					if( metalaxes )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( metalaxes == 1 )
+						{
+						
+							compme += "You have an iron axe.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + metalaxes + " iron axes.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}					
+				
+					if( woodpicks )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( woodpicks == 1 )
+						{
+						
+							compme += "You have a wooden pickaxe.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + woodpicks + " wooden pickaxes.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( stonepicks )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( stonepicks == 1 )
+						{
+						
+							compme += "You have a stone pickaxe.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + stonepicks + " stone axes.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}					
+				
+					if( metalpicks )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( metalpicks == 1 )
+						{
+						
+							compme += "You have an iron pickaxe.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + metalpicks + " iron pickaxes.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}					
+				
+					if( woodswords )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( woodswords == 1 )
+						{
+						
+							compme += "You have a wooden sword.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + woodswords + " wooden swords.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( stoneswords )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( stoneswords == 1 )
+						{
+						
+							compme += "You have a stone sword.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + stoneswords + " stone swords.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}					
+				
+					if( metalswords )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( metalswords == 1 )
+						{
+						
+							compme += "You have an iron sword.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + metalswords + " iron swords.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( woodspades )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( woodspades == 1 )
+						{
+						
+							compme += "You have a wooden spade.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + woodspades + " wooden spades.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( stonespades )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( stonespades == 1 )
+						{
+						
+							compme += "You have a stone spade.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + stonespades + " stone spades.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}					
+				
+					if( metalspades )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( metalspades == 1 )
+						{
+						
+							compme += "You have an iron spade.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + metalspades + " iron spades.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}								
+				
+					if( logs )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( logs == 1 )
+						{
+						
+							compme += "You have a log.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + logs + " logs.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}								
+				
+					if( planks )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( planks == 1 )
+						{
+						
+							compme += "You have a plank.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + planks + " planks.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( sticks )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( sticks == 1 )
+						{
+						
+							compme += "You have a stick.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + sticks + " sticks.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}
+				
+					if( stone )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( stone == 1 )
+						{
+						
+							compme += "You have a piece of stone.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + stone + " units of stone.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( metal )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( metal == 1 )
+						{
+						
+							compme += "You have an iron bar.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + metal + " iron bars.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( ore )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( ore == 1 )
+						{
+						
+							compme += "You have a piece of iron ore.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + ore + " pieces of iron ore.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}	
+					
+					if( pork )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( pork == 1 )
+						{
+						
+							compme += "You have a pork chop.  Delicious!";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + pork + " delicious pork chops.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}		
+				
+					if( wool )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( wool == 1 )
+						{
+						
+							compme += "You have a piece of wool.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + wool + " pieces of wool.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( chopsleft )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( chopsleft == 1 )
+						{
+						
+							compme += "You have one use of your woodchopping axe left.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + chopsleft + " uses of your woodchopping axe left.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( slashesleft )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( slashesleft == 1 )
+						{
+						
+							compme += "You have one use of your sword left.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + slashesleft + " uses of your sword left.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( picksleft )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( picksleft == 1 )
+						{
+						
+							compme += "You have one use of your pickaxe left.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + picksleft + " uses of your pickaxe left.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}				
+				
+					if( shovelsleft )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						if( shovelsleft == 1 )
+						{
+						
+							compme += "You have one use of your spade left.";
+						
+						}
+						else
+						{
+						
+							compme += "You have " + shovelsleft + " uses of your spade left.";
+							
+						}						
+						
+						compme += "</div>";						
+					
+						flip = 1;					
+					
+					}
+					
+					if( flip == 0 )
+					{
+					
+						compme += "<div class = 'comment'>";
+						
+						compme += "There is nothing in your inventory.";						
+						
+						compme += "</div>";						
+					
+					}				
+				
+					compme = updateenemies( compme );				
+				
+				}
+				break;
+				
+				case "look":
+				case "observe":
+				case "explore":
+				case "see":
+				{
+				
+					compme += "<div class = 'comment'>";
+					
+					compme += updatepos( compme );
+					
+					compme += "</div>";		
+					
+					compme = updateenemies( compme );
+				
+				}
+				break;
+				
+				default:
+				{
+				
+					compme += "<div class = 'comment'>";
+					
+					compme += "The verb provided was unrecognised.";
+					
+					compme += "</div>";				
+				
+					compme = updateenemies( compme );				
+				
+				}
+				break;		
+			
+			}
+		
+		}
+	
+	}
+	
+	document.getElementById( "log" ).innerHTML += compme;
+	
+	var inte = document.getElementById( "textin" );
+	
+	if( inte != null )
+	{
+	
+		inte.value = "";
+		
+	}
+
+	window.scrollTo( 0, document.body.scrollHeight );
+
+}
+
+</script>
+
+</head>
+
+<body onload = "command();">
+
+<div id = "log">
+
+<div class = "comment">Minecraft as a text adventure.</div>
+<div class = "comment">Global Game Jam entry by James Wild, 2011.</div>
+<div class = "comment">All Javascript and CSS.</div>
+<br/>
+<div class = "comment">Some potential (and optional) objectives:</div>
+<div class = "comment">-Find and build all of the craftable objects</div>
+<div class = "comment">-Drive the monsters to extinction</div>
+<div class = "comment">-Explore as much of the map as possible!</div>
+<br/>
+<div class = "comment">Remember that some commands might need a parameter or should be used without one!</div>
+</div>
+<br/>
+<div id = "textincontainer">
+<input id = "textin" type="text" value="look" onkeydown="if( event.keyCode == 13 ){command();} "/>
+</div>
+
+</body>
+
+</html>

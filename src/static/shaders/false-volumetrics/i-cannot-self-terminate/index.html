@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/shared.css">
+  <title>I Cannot Self-Terminate - SUNRUSE</title>
+</head>
+
+<body>
+  <nav>
+    <a href="/">
+      <h1>
+        <img src="/logo.svg" onerror="this.src='/logo.png'" alt="SUNRUSE">
+      </h1>
+    </a>
+    <h2>Open Source</h2>
+    <a href="/game-prototypes">Game Prototypes</a>
+    <a href="/shaders">Shaders</a>
+    <h2>Miscellaneous</h2>
+    <a href="/miscellaneous/3d-modelling">3D Modelling</a>
+    <a href="/miscellaneous/about-contact">About/Contact</a>
+    <a href="/miscellaneous/links">Links</a>
+  </nav>
+  <link rel="stylesheet" type="text/css" href="../../viewer.css">
+  <div id="loading">
+    <img src="preview.png" />
+    <div id="loading-description">Downloading...</div>
+  </div>
+  <script id="code" type="glsl">
+#ifdef GL_ES
+precision mediump float;
+#endif
+uniform float seconds;
+uniform vec2 resolution;
+uniform vec2 mouse;
+vec3 sphericalNormal(float yaw, float pitch) {
+    return vec3(cos(pitch) * cos(yaw), sin(pitch), sin(pitch) * cos(yaw));
+}
+
+mat3 sphericalMatrix(float yaw, float pitch) {
+    return mat3(
+        1.0, 0.0, 0.0,
+        0.0, cos(pitch), -sin(pitch),
+        0.0, sin(pitch), cos(pitch)
+    )
+    * mat3(
+        cos(yaw), 0.0, -sin(yaw),
+        0.0, 1.0, 0.0,
+        sin(yaw), 0.0, cos(yaw)
+    );
+}
+
+// Returns the location of the current fragment relative to the center of the screen, where 0.5 is the distance to the nearest screen border.
+// This will return values > +-0.5 on the X axis in widescreen, and the Y axis in portrait.
+vec2 pixelCoord(vec2 fragCoord) { 
+    return ((fragCoord - (resolution.xy / 2.0)) / min(resolution.x, resolution.y)); 
+}
+
+struct ray {
+    vec3 start;
+    vec3 normal;
+};
+    
+ray lens(vec2 fragCoord) {
+    return ray(vec3(0.0, 0.0, -3.0), normalize(vec3(pixelCoord(fragCoord), 0.5)) * sphericalMatrix(sin(seconds * 0.8) * 0.1, sin(seconds * 1.6) * 0.025));
+}
+
+// Returns how long along a ray in world units the nearest point to a given point is.
+// May return negative values.
+float along(ray from, vec3 point) {
+    return dot(point - from.start, from.normal);
+}
+        
+vec3 nearest(ray from, vec3 point) {
+    return from.start + from.normal * along(from, point);
+}
+
+float radial(vec3 origin, float rate) {
+    return 1.0 / (1.0 + length(origin) * rate);
+}
+
+float directional(vec3 origin, vec3 normal, float focus) {
+    return pow(max(0.0, dot(normalize(origin), normal)), focus);
+}
+
+float hideWhenBehind(float distance) {
+    return distance > 0.0 ? distance : 1.0 / 0.0;
+}
+
+struct plane {
+    vec3 normal;
+    float distance;
+};
+
+float occlusionPlane(ray line, plane surface) {
+    return dot(surface.normal, surface.normal * surface.distance - line.start) / dot(surface.normal, line.normal);	
+}
+
+struct sphere {
+    vec3 origin;
+    float radius;
+};
+
+float occlusion(ray from, sphere sphere) {
+    float _along = along(from, sphere.origin);
+    float distance = distance(from.start + from.normal * _along, sphere.origin) / sphere.radius;
+    if(distance > 1.0) return 1.0 / 0.0;
+    return _along - cos(asin(distance));
+}
+
+float occlusion(ray from) {
+    return 
+        min(
+            hideWhenBehind(occlusion(from, sphere(vec3(1.0, sin(seconds * 1.5) * 0.1 - 0.125, 1.0), 0.5))),
+            min(
+                hideWhenBehind(occlusionPlane(from, plane(vec3(0.0, -1.0, 0.0), -2.2))),
+                min(
+                    hideWhenBehind(occlusionPlane(from, plane(vec3(0.0, 1.0, 0.0), -0.3))),
+                    min(
+                        hideWhenBehind(occlusionPlane(from, plane(vec3(1.0, 0.0, 0.0), -4.0))),
+                        min(
+                            hideWhenBehind(occlusionPlane(from, plane(vec3(-1.0, 0.0, 0.0), -4.0))),
+                            hideWhenBehind(occlusionPlane(from, plane(vec3(0.0, 0.0, -1.0), -4.0)))
+                        )
+                    )
+                )
+            )
+        );
+}
+
+vec3 closest(ray from, vec3 origin, float occlusionAlong, out float closeFade) {
+    float dist = min(occlusionAlong, hideWhenBehind(along(from, origin)));
+    closeFade = 1.0 - (1.0 / pow(1.0 + dist, 0.3));
+    return from.start + from.normal * dist - origin;
+}
+
+float closestPlane(ray from, plane plane, float occlusionAlong) {
+    return
+        dot(
+            plane.normal,
+            from.start + from.normal * min(
+                occlusionAlong,
+                // If the ray is pointing away from the plane...
+                dot(from.normal, plane.normal) > 0.0 
+                    // The closest point must be the start.
+                    ? 0.0
+                    // Else, it's where the ray intersects the surface.
+                    : occlusionPlane(from, plane)
+            )
+        ) + plane.distance;			
+}
+
+float falloffFromPlane(vec3 at, plane surface, float rate) {
+    float loc = dot(at, surface.normal) - surface.distance;
+    return loc < 0.0 ? 0.0 : 1.0 / (1.0 + loc * rate);
+}
+
+void main() {
+    ray from = lens(gl_FragCoord.xy);
+    float occlusionAlong = occlusion(from);
+    vec3 color = vec3(0.0);
+    float dist;
+    vec3 difference;
+    float intensity = 0.0;
+    
+    #define overheadLamp(x, z) difference = closest(from, vec3(x, 2.0, z), occlusionAlong, dist); intensity += dist * radial(difference, 16.0) * 5.0 * directional(difference, vec3(0.0, -1.0, 0.0), 4.0) + radial(difference, 512.0) * 20.0;	
+    
+    overheadLamp(2.5, 2.5)
+    overheadLamp(-2.5, 2.5)
+    overheadLamp(2.5, -2.5)
+    overheadLamp(-2.5, -2.5)	
+    color += vec3(0.7, 0.6, 0.0) * intensity;
+        
+    intensity = 0.0;
+    vec3 spin = vec3(0.0, cos(seconds * 5.0), sin(seconds * 5.0));
+    difference = closest(from, vec3(4.0, 1.0, 0.0), occlusionAlong, dist);
+    intensity += dist * radial(difference, 32.0) + radial(difference, 8.0) * directional(difference, spin, 8.0);		
+    difference = closest(from, vec3(-4.0, 1.0, 0.0), occlusionAlong, dist);
+    intensity += dist * radial(difference, 32.0) + radial(difference, 8.0) * directional(difference, -spin, 8.0);			
+    color += vec3(1.0, 0.0, 0.0) * intensity;
+    
+    // Lava plane.
+    color += vec3(0.7, 0.0, 0.0) * falloffFromPlane(from.start + from.normal * occlusionAlong, plane(vec3(0.0, 1.0, 0.0), -0.31), 8.0);
+    
+    intensity = 0.0;
+    #define lavaFlare(x, z) difference = closest(from, vec3(x, sin(seconds * 1.2 + x + z) * 0.1 - 0.15, z), occlusionAlong, dist); intensity += dist * radial(difference, 32.0 + sin(seconds * 3.0 + x + z) * 16.0);
+    
+    lavaFlare(-0.7, -2.5)
+    lavaFlare(0.5, -2.0)
+    lavaFlare(-0.5, 0.0)
+    lavaFlare(-1.3, 2.0)
+    lavaFlare(-1.9, -0.3)
+    
+    color += vec3(1.0, 1.0, 0.0) * intensity;
+    //color -= 0.1;
+    color *= pow(from.normal.z, 3.0);
+    color *= 2.0;
+    color = clamp(color, 0.0, 1.0);
+    
+    gl_FragColor = vec4( pow(color, vec3(1.0 / 2.2)), 0.0 );
+
+}
+</script>
+  <div id="toolbar">
+    <a href="../../">Back</a>
+    <input id="play" name="play" type="checkbox" checked>
+    <label for="play">Play</label>
+    <input id="show-code" name="show-code" type="checkbox">
+    <label for="show-code">Show Code</label>
+  </div>
+  <div id="canvas-container">
+    <canvas></canvas>
+  </div>
+  <script src="../../viewer.js"></script>
+</body>
+
+</html>

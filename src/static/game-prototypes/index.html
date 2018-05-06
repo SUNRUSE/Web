@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/shared.css">
+  <title>Game Prototypes - SUNRUSE</title>
+</head>
+
+<body>
+  <nav>
+    <a href="/">
+      <h1>
+        <img src="/logo.svg" onerror="this.src='/logo.png'" alt="SUNRUSE">
+      </h1>
+    </a>
+    <h2>Open Source</h2>
+    <a href="/game-prototypes">Game Prototypes</a>
+    <a href="/shaders">Shaders</a>
+    <h2>Miscellaneous</h2>
+    <a href="/miscellaneous/3d-modelling">3D Modelling</a>
+    <a href="/miscellaneous/about-contact">About/Contact</a>
+    <a href="/miscellaneous/links">Links</a>
+  </nav>
+  <h3>Game Prototypes</h3>
+  <p>Small experiments with browser technologies.</p>
+  <p>These may not work on some browsers, or have bugs.</p>
+
+  <a href="csg2d">
+    <h4>CSG 2D</h4>
+    <img src="csg2d/icon.png">
+  </a>
+  <p>A 2D skateboarding game (similar to Line Rider in some ways) rendered entirely using browser elements.</p>
+  <p>Collision is implemented by raymarching a signed distance field generated from those elements.</p>
+  <p>
+    <a href="https://github.com/SUNRUSE/csg2d">View source on GitHub</a>
+  </p>
+  <p>
+    <a href="csg2d">Play here</a>
+  </p>
+
+  <a href="motion-blur">
+    <h4>Motion Blur</h4>
+    <img src="motion-blur/icon.png">
+  </a>
+  <p>Renders lights as "stretchy" billboards, allowing for cheap motion blur without post-processing or render-to-texture; just
+    additively blended polygons.</p>
+  <p>
+    <a href="https://github.com/SUNRUSE/MotionBlur/tree/motionBlurDemo">View source on GitHub</a>
+  </p>
+  <p>
+    <a href="motion-blur">Play here</a>
+  </p>
+
+  <a href="massplat">
+    <h4>MasSplat</h4>
+    <img src="massplat/icon.png">
+  </a>
+  <p>An extension of Motion Blur to render entire scenes using alpha-test billboards.</p>
+  <p>This works, and looks fairly unique, but is heavy on fillrate as those billboards must overlap to eliminate cracks in the
+    scene, and with a &quot;soft&quot; edge this leads to a great deal of overdraw.</p>
+  <p>May be revisited in future; a Blender export plugin and a basic engine framework have been implemented.</p>
+  <p>
+    <a href="https://github.com/jameswilddev/MasSplat">View source on GitHub</a>
+  </p>
+  <p>
+    <a href="massplat">Play here</a>
+  </p>
+
+  <h3>Global Games Jam</h3>
+  <p>Games created collaboratively over a 48 hour period.</p>
+
+  <a href="ritual">
+    <h4>Ritual (2016, as &quot;Baconfish&quot;)</h4>
+    <img src="ritual/icon.png">
+  </a>
+  <p>A short game in which you must complete your morning ritual within a time limit.</p>
+  <p>Introduced us to CoffeeScript, Pixi.JS and Aseprite. Inspired
+    <a href="/libraries/sprigganjs">SprigganJS</a>.</p>
+  <p>
+    Contributors:
+    <ul>
+      <li>
+        <a href="https://twitter.com/ilogical">Daniel Morrison</a>
+      </li>
+      <li>
+        <a href="https://twitter.com/rmp135">Ryan Poole</a>
+      </li>
+    </ul>
+  </p>
+  <p>
+    <a href="https://github.com/baconfish/globalGamesJam" class="footer-link">View source on Github</a>
+  </p>
+  <p>
+    <a href="ritual" class="footer-link">Play here</a>
+  </p>
+
+  <a href="minetext">
+    <h4>MineText (2011)</h4>
+  </a>
+  <p>An imitation of Minecraft's crafting system, as a text adventure.</p>
+  <p>Created in the final hours (learning JavaScript along the way) after the game our team was making was unsuccessful.</p>
+  <p>
+    <a href="minetext">Play here</a>
+  </p>
+</body>
+
+</html>

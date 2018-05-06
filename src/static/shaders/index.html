@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/shared.css">
+  <title>Shaders - SUNRUSE</title>
+</head>
+
+<body>
+  <nav>
+    <a href="/">
+      <h1>
+        <img src="/logo.svg" onerror="this.src='/logo.png'" alt="SUNRUSE">
+      </h1>
+    </a>
+    <h2>Open Source</h2>
+    <a href="/game-prototypes">Game Prototypes</a>
+    <a href="/shaders">Shaders</a>
+    <h2>Miscellaneous</h2>
+    <a href="/miscellaneous/3d-modelling">3D Modelling</a>
+    <a href="/miscellaneous/about-contact">About/Contact</a>
+    <a href="/miscellaneous/links">Links</a>
+  </nav>
+  <h3>Shaders</h3>
+  <p>&quot;Two-triangle&quot; shaders; programs which run as pixel shaders full-screen to generate video.</p>
+  <p>You may view these in your browser if it supports WebGL.</p>
+  <h4>False Volumetrics</h4>
+  <p>By treating lights as additively blended billboards, they can be arranged into very &quot;moody&quot; scenes.</p>
+  <p>In addition, a simple single-sample raytrace of a solid scene is performed to create a depth sample; if that depth sample
+    is in front of the billboard, the light is sampled there instead.</p>
+  <p>This allows silhouettes to be defined in the scene.</p>
+  <div class="tile">
+    <a href="false-volumetrics/under-the-bridge">
+      <img src="false-volumetrics/under-the-bridge/preview.png" />
+      <h5>Under the Bridge</h5>
+    </a>
+    <a href="false-volumetrics/under-the-bridge">View here</a>
+    <a href="https://www.shadertoy.com/view/llBGzm">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="false-volumetrics/i-cannot-self-terminate">
+      <img src="false-volumetrics/i-cannot-self-terminate/preview.png" />
+      <h5>I Cannot Self-Terminate</h5>
+    </a>
+    <a href="false-volumetrics/i-cannot-self-terminate">View here</a>
+    <a href="https://www.shadertoy.com/view/4l2Gzh">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="false-volumetrics/coolant-tubes">
+      <img src="false-volumetrics/coolant-tubes/preview.png" />
+      <h5>Coolant Tubes</h5>
+    </a>
+    <a href="false-volumetrics/coolant-tubes">View here</a>
+    <a href="https://www.shadertoy.com/view/4dGSDW">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="false-volumetrics/shadow-galley">
+      <img src="false-volumetrics/shadow-galley/preview.png" />
+      <h5>Shadow Galley</h5>
+    </a>
+    <a href="false-volumetrics/shadow-galley">View here</a>
+    <a href="https://www.shadertoy.com/view/MsVXW1">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="false-volumetrics/i">
+      <img src="false-volumetrics/i/preview.png" />
+      <h5>I</h5>
+    </a>
+    <a href="false-volumetrics/i">View here</a>
+    <a href="https://www.shadertoy.com/view/4tX3W2">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="false-volumetrics/ii">
+      <img src="false-volumetrics/ii/preview.png" />
+      <h5>II</h5>
+    </a>
+    <a href="false-volumetrics/ii">View here</a>
+    <a href="https://www.shadertoy.com/view/Xlf3W2">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="false-volumetrics/iii">
+      <img src="false-volumetrics/iii/preview.png" />
+      <h5>III</h5>
+    </a>
+    <a href="false-volumetrics/iii">View here</a>
+    <a href="https://www.shadertoy.com/view/MlfGWj">View on ShaderToy</a>
+  </div>
+  <h4>Projection</h4>
+  <p>By writing functions which map screen-space coordinates to UV coordinates and a depth, 3D scenes can be constructed.</p>
+  <p>This is quite limited however; the camera cannot move in most cases and complicated masking must be performed to construct
+    geometry.
+  </p>
+  <div class="tile">
+    <a href="projection/ring-sequence">
+      <img src="projection/ring-sequence/preview.png" />
+      <h5>Ring Sequence</h5>
+    </a>
+    <a href="projection/ring-sequence">View here</a>
+    <a href="https://www.shadertoy.com/view/4sdGR8">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="projection/mute-city">
+      <img src="projection/mute-city/preview.png" />
+      <h5>Mute City</h5>
+    </a>
+    <a href="projection/mute-city">View here</a>
+    <a href="https://www.shadertoy.com/view/4d3GzN">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="projection/air-glider">
+      <img src="projection/air-glider/preview.png" />
+      <h5>Air Glider</h5>
+    </a>
+    <a href="projection/air-glider">View here</a>
+    <a href="https://www.shadertoy.com/view/Xd33zr">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="projection/jade-gully">
+      <img src="projection/jade-gully/preview.png" />
+      <h5>Jade Gully</h5>
+    </a>
+    <a href="projection/jade-gully">View here</a>
+    <a href="https://www.shadertoy.com/view/ld3GDH">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="projection/horizon-bender">
+      <img src="projection/horizon-bender/preview.png" />
+      <h5>Horizon Bender</h5>
+    </a>
+    <a href="projection/horizon-bender">View here</a>
+    <a href="https://www.shadertoy.com/view/Xs3GzH">View on ShaderToy</a>
+  </div>
+  <h4>Distance Fields</h4>
+  <p>Scenes created by raymarching or otherwise sampling signed distance fields, allowing for (relatively) cheap pseudo-raytracing
+    of complex procedural geometry.</p>
+  <div class="tile">
+    <a href="distance-fields/marching-the-desert">
+      <img src="distance-fields/marching-the-desert/preview.png" />
+      <h5>Marching the Desert</h5>
+    </a>
+    <a href="distance-fields/marching-the-desert">View here</a>
+    <a href="https://www.shadertoy.com/view/Xll3RM">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="distance-fields/a-clockwork-orange">
+      <img src="distance-fields/a-clockwork-orange/preview.png" />
+      <h5>A Clockwork Orange</h5>
+    </a>
+    <a href="distance-fields/a-clockwork-orange">View here</a>
+    <a href="https://www.shadertoy.com/view/Xt2SWw">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="distance-fields/sand-tubes">
+      <img src="distance-fields/sand-tubes/preview.png" />
+      <h5>Sand Tubes</h5>
+    </a>
+    <a href="distance-fields/sand-tubes">View here</a>
+    <a href="https://www.shadertoy.com/view/4lc3Wr">View on ShaderToy</a>
+  </div>
+
+  <h4>Miscellaneous</h4>
+  <div class="tile">
+    <a href="miscellaneous/warp-factor">
+      <img src="miscellaneous/warp-factor/preview.png" />
+      <h5>Warp Factor</h5>
+    </a>
+    <a href="miscellaneous/warp-factor">View here</a>
+    <a href="https://www.shadertoy.com/view/4tcGRn">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="miscellaneous/cirrocumulus-business">
+      <img src="miscellaneous/cirrocumulus-business/preview.png" />
+      <h5>Cirrocumulus Business</h5>
+    </a>
+    <a href="miscellaneous/cirrocumulus-business">View here</a>
+    <a href="https://www.shadertoy.com/view/4ddSRl">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="miscellaneous/alinearity-of-time">
+      <img src="miscellaneous/alinearity-of-time/preview.png" />
+      <h5>Alinearity of Time</h5>
+    </a>
+    <a href="miscellaneous/alinearity-of-time">View here</a>
+    <a href="https://www.shadertoy.com/view/XlS3z3">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="miscellaneous/shifting-waves">
+      <img src="miscellaneous/shifting-waves/preview.png" />
+      <h5>Shifting Waves</h5>
+    </a>
+    <a href="miscellaneous/shifting-waves">View here</a>
+    <a href="https://www.shadertoy.com/view/lll3Wf">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="miscellaneous/fountain-of-dreams">
+      <img src="miscellaneous/fountain-of-dreams/preview.png" />
+      <h5>Fountain of Dreams</h5>
+    </a>
+    <a href="miscellaneous/fountain-of-dreams">View here</a>
+    <a href="https://www.shadertoy.com/view/4t3GzH">View on ShaderToy</a>
+  </div>
+  <div class="tile">
+    <a href="miscellaneous/sunruse-logo">
+      <img src="miscellaneous/sunruse-logo/preview.png" />
+      <h5>SUNRUSE Logo</h5>
+    </a>
+    <a href="miscellaneous/sunruse-logo">View here</a>
+    <a href="https://www.shadertoy.com/view/XllXR7">View on ShaderToy</a>
+  </div>
+
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Motion Blur</title>
+        <meta property="og:image" content="icon.png" />
+    </head>
+    <body onload="OnLoad()">
+        <link rel="stylesheet" type="text/css" href="reset.css">
+        <form>
+            <fieldset>
+                <legend>Track Curve</legend>
+                <label>Up/down: <input type="range" min="-0.01" max="0.01" value="0" step="any" id="PitchSlider"></label>
+                <label>Left/right: <input type="range" min="-0.01" max="0.01" value="0" step="any" id="YawSlider"></label>
+                <label>Twist: <input type="range" min="-0.01" max="0.01" value="0" step="any" id="RollSlider"></label>
+                <label>Bank: <input type="range" min="-1" max="1" value="0" step="any" id="BankSlider"></label>
+            </fieldset>
+            <fieldset>
+                <legend>Camera</legend>
+                <label>Speed: <input type="range" min="-200" max="2000" value="200" step="any" id="SpeedSlider"></label>
+                <button onclick="ResetCamera()">Back to start</button>
+            </fieldset>
+        </form>
+        <canvas></canvas>
+        <script src="eventLoop.js"></script>
+        <script src="shaderHelpers.js"></script>
+        <script src="cloud.js"></script>
+        <script src="shaders.js"></script>
+    </body>
+</html>

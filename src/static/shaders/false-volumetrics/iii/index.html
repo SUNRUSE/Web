@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/shared.css">
+  <title>III - SUNRUSE</title>
+</head>
+
+<body>
+  <nav>
+    <a href="/">
+      <h1>
+        <img src="/logo.svg" onerror="this.src='/logo.png'" alt="SUNRUSE">
+      </h1>
+    </a>
+    <h2>Open Source</h2>
+    <a href="/game-prototypes">Game Prototypes</a>
+    <a href="/shaders">Shaders</a>
+    <h2>Miscellaneous</h2>
+    <a href="/miscellaneous/3d-modelling">3D Modelling</a>
+    <a href="/miscellaneous/about-contact">About/Contact</a>
+    <a href="/miscellaneous/links">Links</a>
+  </nav>
+  <link rel="stylesheet" type="text/css" href="../../viewer.css">
+  <div id="loading">
+    <img src="preview.png" />
+    <div id="loading-description">Downloading...</div>
+  </div>
+  <script id="code" type="glsl">
+#ifdef GL_ES
+precision mediump float;
+#endif
+uniform float seconds;
+uniform vec2 resolution;
+uniform vec2 mouse;
+struct plane {
+    vec3 normal;
+    float distance;
+};
+
+/* Rays */
+struct ray {
+    vec3 start;
+    vec3 normal;
+};
+    
+ray lens(vec2 fragCoord) {
+    return ray(
+        vec3(sin(seconds * 0.5) * 3.0, 0.0, sin(seconds * 1.0) * 10.0 - 2.0), 
+        normalize(vec3((fragCoord.xy / resolution.xy) - 0.5, 0.3))
+    );
+}
+    
+ray translate(vec3 offset, ray transform) {
+    return ray(
+        transform.start - offset,
+        transform.normal
+    );
+}
+
+ray scale(vec3 factor, ray transform) {
+    return ray(
+        transform.start / factor, 
+        normalize(transform.normal / factor)
+    );
+}
+
+ray scale(float factor, ray transform) {
+    return ray(
+        transform.start / factor, 
+        normalize(transform.normal / factor)
+    );
+}
+
+ray rotateY(float angle, ray transform) {
+    mat3 mat = mat3(cos(angle), 0.0, -sin(angle), 0.0, 1.0, 0.0, sin(angle), 0.0, cos(angle));
+    return ray(transform.start * mat, transform.normal * mat);
+}
+
+float distanceAlong(ray sample) {
+    return -dot(sample.start, sample.normal);
+}
+
+vec3 closestPoint(ray sample) {
+    return sample.start + sample.normal * distanceAlong(sample);
+}
+
+ray reflect(plane surface, ray transform) {
+    return ray(reflect(transform.start, surface.normal) + surface.normal * 2.0 * surface.distance, reflect(transform.normal, surface.normal));
+}
+
+vec3 project(plane surface, vec3 point) {
+    return surface.distance + point - dot(surface.normal, point);
+}
+
+
+
+vec3 project(plane surface, ray line) {
+    return line.start 
+        + line.normal * (dot(surface.normal, surface.normal * surface.distance - line.start) / dot(surface.normal, line.normal));
+}
+
+ray repeat(plane surface, vec3 size, ray world, ray transform) {
+    vec3 projected = project(surface, world);
+    return ray(transform.start - (floor(projected / size) * size), transform.normal);
+}
+
+vec3 gridTex(vec3 at) {
+    //if(at.z > 0.0) return vec3(0.0);
+    //at *= 0.2;
+    at -= 0.5;
+    bvec3 onLine = bvec3(fract(at).x < 0.1, fract(at).y < 0.1, fract(at).z < 0.1);
+    return onLine.x || onLine.y || onLine.z ? vec3(0.1) : vec3(0.0);
+}
+
+/* Falloff functions. */
+float radial(ray sample) {
+    return 
+        // Fade out as the camera passes through the volume.
+        clamp(distanceAlong(sample), 0.0, 1.0) 
+        // Actual rolloff.
+        * max(0.0, 1.0 - (length(closestPoint(sample))));
+}
+
+float spot(vec3 normal, ray sample) {
+    return max(dot(normal, normalize(closestPoint(sample))), 0.0);
+}
+
+float spotDual(vec3 normal, ray sample) {
+    return dot(normalize(closestPoint(sample)), normal);
+}
+
+float quadratic(float val) {
+    return val * val * val * val;
+}
+
+vec3 shade(vec3 color, float intensity) {
+    return color * intensity;
+}
+
+/* Occluders */
+float occlude(plane surface, ray sample) {
+    return (distanceAlong(sample) / dot(surface.normal, sample.normal)) - surface.distance;
+}
+
+float occlude(float distance, ray sample) {
+    return 1.0;
+}
+
+vec3 scene(ray lens) {    
+    vec3 color = vec3(0.0);
+    
+    plane doorFrame = plane(vec3(0.0, 0.0, -1.0), sin(seconds * 5.0) * 5.0);
+    float doorFrameDistance = occlude(doorFrame, lens);
+    
+    ray loc = scale(vec3(8.0, 5.0, 4.0), rotateY(seconds * 1.0, translate(vec3(0.0, 3.0, 12.0), lens)));
+    color += shade(vec3(1.0, 0.0, 0.0), quadratic(occlude(doorFrameDistance, loc) * radial(loc) * spotDual(vec3(1.0, 0.0, 0.0), loc)));    
+    
+    loc = scale(vec3(5.0, 10.0, 5.0), translate(vec3(4.0, 5.0, 0.0), lens));
+    color += shade(vec3(0.3, 0.4, 1.0), quadratic(occlude(doorFrameDistance, loc) * radial(loc) * spot(vec3(-0.7, -0.7, 0.0), loc)));             
+    
+    loc = scale(vec3(5.0, 10.0, 5.0), translate(vec3(-4.0, 5.0, 5.0), lens));
+    color += shade(vec3(0.3, 0.4, 1.0), quadratic(occlude(doorFrameDistance, loc) * radial(loc) * spot(vec3(0.7, -0.7, 0.0), loc))); 
+    
+    loc = scale(vec3(5.0, 10.0, 5.0), translate(vec3(4.0, 5.0, 10.0), lens));
+    color += shade(vec3(0.3, 0.4, 1.0), quadratic(occlude(doorFrameDistance, loc) * radial(loc) * spot(vec3(-0.7, -0.7, 0.0), loc)));     
+    
+    loc = scale(vec3(5.0, 10.0, 5.0), translate(vec3(-4.0, 5.0, 15.0), lens));
+    color += shade(vec3(0.3, 0.4, 1.0), quadratic(occlude(doorFrameDistance, loc) * radial(loc) * spot(vec3(0.7, -0.7, 0.0), loc)));         
+    
+    loc = scale(15.0, translate(vec3(0.0, 3.0, 12.0), lens));
+    color += shade(vec3(0.3, 0.4, 1.0), quadratic(occlude(doorFrameDistance, loc) * radial(loc))); 
+    
+    loc = scale(15.0, translate(vec3(0.0, 1.0, 20.0), lens));
+    color += shade(vec3(0.9, 0.7, 0.2), quadratic(occlude(doorFrameDistance, loc) * radial(loc)));     
+    
+    //loc = scale(vec3(2.0, 8.0, 2.0), translate(vec3(-5.0, -5.0, 2.0), lens));
+    //color += shade(vec3(0.0, 1.0, 0.0), quadratic(occlude(doorFrameDistance, loc) * radial(loc) * spot(vec3(0.0, 1.0, 0.0), loc)));             
+    
+    loc = lens;
+    loc = repeat(plane(vec3(1.0, 0.0, 0.0), -4.0), vec3(4.25, 200.0, 4.0), translate(vec3(0.0, -4.0, 0.0), lens), loc);
+    loc = scale(vec3(2.0, 8.0, 3.0), translate(vec3(0.0, -4.0, 2.0), loc));
+    color += shade(vec3(0.0, 1.0, 0.0), quadratic(radial(loc) * spot(vec3(0.0, 1.0, 0.0), loc)));             
+    
+    loc = lens;
+    loc = repeat(plane(vec3(-1.0, 0.0, 0.0), -4.0), vec3(-4.25, 200.0, 4.0), translate(vec3(0.0, -4.0, 0.0), lens), loc);
+    loc = scale(vec3(2.0, 8.0, 3.0), translate(vec3(0.0, -4.0, 2.0), loc));
+    
+    color += shade(vec3(0.0, 1.0, 0.0), quadratic(radial(loc) * spot(vec3(0.0, 1.0, 0.0), loc)));             
+    
+    //color = vec3((closestPoint(loc) - floor(closestPoint(loc))).x);
+   //color += gridTex(project(plane(vec3(1.0, 0.0, 0.0), -4.0), lens)); 
+   //color += gridTex(project(plane(vec3(0.0, 1.0, 0.0), -4.95), lens));
+    //	color += gridTex(project(plane(vec3(0.0, 0.0, -1.0), -25.0), lens));
+    
+    
+    return color;
+}
+
+void main()
+{
+    gl_FragColor = pow(vec4(
+        scene(lens(gl_FragCoord.xy))
+        + scene(reflect(plane(vec3(0.0, 1.0, 0.0), -4.0), lens(gl_FragCoord.xy))) * vec3(0.1, 0.1, 0.1)
+    , 1.0), vec4(1.0 / 2.2));
+}
+</script>
+  <div id="toolbar">
+    <a href="../../">Back</a>
+    <input id="play" name="play" type="checkbox" checked>
+    <label for="play">Play</label>
+    <input id="show-code" name="show-code" type="checkbox">
+    <label for="show-code">Show Code</label>
+  </div>
+  <div id="canvas-container">
+    <canvas></canvas>
+  </div>
+  <script src="../../viewer.js"></script>
+</body>
+
+</html>

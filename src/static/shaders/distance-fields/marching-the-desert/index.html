@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/shared.css">
+  <title>Marching the Desert - SUNRUSE</title>
+</head>
+
+<body>
+  <nav>
+    <a href="/">
+      <h1>
+        <img src="/logo.svg" onerror="this.src='/logo.png'" alt="SUNRUSE">
+      </h1>
+    </a>
+    <h2>Open Source</h2>
+    <a href="/game-prototypes">Game Prototypes</a>
+    <a href="/shaders">Shaders</a>
+    <h2>Miscellaneous</h2>
+    <a href="/miscellaneous/3d-modelling">3D Modelling</a>
+    <a href="/miscellaneous/about-contact">About/Contact</a>
+    <a href="/miscellaneous/links">Links</a>
+  </nav>
+  <link rel="stylesheet" type="text/css" href="../../viewer.css">
+  <div id="loading">
+    <img src="preview.png" />
+    <div id="loading-description">Downloading...</div>
+  </div>
+  <script id="code" type="glsl">
+#ifdef GL_ES
+    precision mediump float;
+#endif
+uniform float seconds;
+uniform vec2 resolution;
+uniform vec2 mouse;
+//#define MORE_MOUSE_MOVEMENT
+//#define RANDOM_BALL_OFFSETS
+// Gets the normal vector along which to trace a ray for the current pixel.
+vec3 lens(vec2 fragCoord) {
+    return normalize(vec3(fragCoord / resolution - 0.5, 0.3));
+}
+// Terrain.
+float terrainWave(vec3 at, float xzScale, float yScale) {
+    return (sin(at.x * xzScale) + cos(at.z * xzScale)) * yScale;
+}
+float terrain(vec3 at) {
+    return 
+        terrainWave(at, 0.01, 32.0)
+        + terrainWave(at, 0.1, 2.0)
+        -abs(sin((at.x/40.0) + sin(at.z / 100.0) * 1.0)) * 50.0;
+}
+float terrainDetailed(vec3 at) {
+    return terrain(at);
+}
+// Shapes.
+struct shapeResult {
+    float distance;
+    int materialId;
+};
+shapeResult sphere(vec3 origin, float radius, int materialId, vec3 at) {
+    return shapeResult(distance(origin, at) - radius, materialId);
+}
+shapeResult plane(float origin, int materialId, float at) {
+    return shapeResult(at - origin, materialId);
+}
+// Shape CSG.
+shapeResult add(shapeResult left, shapeResult right) {
+    // Workaround for Chrome bug preventing ? : on structs.
+    return shapeResult(left.distance < right.distance ? left.distance : right.distance, left.distance < right.distance ? left.materialId : right.materialId);
+}
+// Scene analysis.
+#define MATERIAL_SKY 0
+#define MATERIAL_SAND 1
+#define MATERIAL_MIRROR 2
+shapeResult scene(vec3 at) {
+    return add(
+        sphere(vec3(30.0, 30.0, 30.0)
+                #ifdef RANDOM_BALL_OFFSETS
+                    + sin(floor(at.x / 60.0) * 2.0 + floor(at.y / 60.0) * 3.1 + floor(at.z / 60.0) * 4.6) * 16.0
+                #endif
+            , 5.0, MATERIAL_MIRROR, mod(at, 60.0)), 
+        plane(terrainDetailed(at), MATERIAL_SAND, at.y)
+    );
+}
+#define NORMAL_OFFSET vec2(0.01, 0.0)
+vec3 sceneNormal(vec3 at) {
+    return normalize(vec3(
+        scene(at + NORMAL_OFFSET.xyy).distance - scene(at - NORMAL_OFFSET.xyy).distance,
+        scene(at + NORMAL_OFFSET.yxy).distance - scene(at - NORMAL_OFFSET.yxy).distance,
+        scene(at + NORMAL_OFFSET.yyx).distance - scene(at - NORMAL_OFFSET.yyx).distance
+    ));
+}
+struct raymarchResult {
+    vec3 location;
+    int materialId;
+};
+raymarchResult raymarch(vec3 at, vec3 normal) {
+    for(int iteration = 0; iteration < 128; iteration++) {
+        shapeResult sample = scene(at);
+        if(sample.distance < 0.1)
+            return raymarchResult(at, sample.materialId);
+        at += normal * sample.distance * 0.5;
+    }
+    return raymarchResult(vec3(0.0), MATERIAL_SKY);
+}
+raymarchResult raymarchFast(vec3 at, vec3 normal) {
+    for(int iteration = 0; iteration < 24; iteration++) {
+        shapeResult sample = scene(at);
+        if(sample.distance < 0.1)
+            return raymarchResult(at, sample.materialId);
+        at += normal * sample.distance;
+    }
+    return raymarchResult(vec3(0.0), MATERIAL_SKY);
+}
+// Materials.
+// Computes the sky color at a given normal.
+vec3 sky(vec3 normal) {
+    if(normal.y < -0.1) return vec3(0.0);
+    // Sun normal.
+    float sunBlend = dot(normal, normalize(vec3(1.0, 2.0, 2.0))) * 0.5 + 0.5;
+    return mix(
+        mix(
+            // Horizon color.
+            vec3(0.4, 0.5, 0.7),
+            mix(
+                // Sky color.
+                vec3(0.0, 0.0, 1.0), 
+                vec3(0.0, 0.0, 0.1),
+                sunBlend
+            ),
+            normal.y
+        ), 
+        // Sun color.
+        vec3(2.0, 2.0, 1.0),
+        pow(
+            sunBlend,
+            // Sun size.
+            32.0
+        )
+    );
+}
+float occlusion(vec3 at, vec3 normal, float radius) {
+    return max(scene(at + normal * radius).distance / radius, 0.0);
+}
+vec3 diffuse(vec3 at, vec3 color) {
+    vec3 normal = sceneNormal(at);
+    vec3 light = sky(normal) * occlusion(at, normal, 8.0);
+    return light * color;
+}
+vec3 sand(vec3 at) {
+    return diffuse(at, vec3(0.9, 0.4, 0.01));
+}
+vec3 secondary(vec3 at, vec3 normal) {
+    raymarchResult sample = raymarchFast(at, normal);
+    if(sample.materialId == MATERIAL_SAND) {
+        return sand(sample.location);
+    } else if(sample.materialId == MATERIAL_MIRROR) {
+        vec3 refl = sceneNormal(sample.location);
+        return sky(reflect(normal, refl)) * occlusion(sample.location, refl, 8.0);
+    }    
+    return sky(normal);
+}
+vec3 mirror(vec3 at, vec3 inboundNormal) {
+    vec3 normal = reflect(inboundNormal, sceneNormal(at));
+    return secondary(at + normal * 0.1, normal);
+}
+vec3 primary(vec3 at, vec3 normal) {
+    raymarchResult sample = raymarch(at, normal);
+    if(sample.materialId == MATERIAL_SAND) {
+        return sand(sample.location);
+    } else if(sample.materialId == MATERIAL_MIRROR) {
+        return mirror(sample.location, normal);
+    }    
+    return sky(normal);
+}
+void main()
+{
+    vec3 cameraLocation = vec3(0.0, 50.0, -2.0) + vec3((mouse / resolution) * 
+        #ifdef MORE_MOUSE_MOVEMENT
+            72.0, 
+        #else
+            8.0,
+        #endif
+        -50.0 + seconds * 5.0);
+    vec3 cameraNormal = lens(gl_FragCoord.xy);
+    gl_FragColor = vec4(pow(primary(cameraLocation, cameraNormal), vec3(1.0 / 2.2)),1.0);
+}
+</script>
+  <div id="toolbar">
+    <a href="../../">Back</a>
+    <input id="play" name="play" type="checkbox" checked>
+    <label for="play">Play</label>
+    <input id="show-code" name="show-code" type="checkbox">
+    <label for="show-code">Show Code</label>
+  </div>
+  <div id="canvas-container">
+    <canvas></canvas>
+  </div>
+  <script src="../../viewer.js"></script>
+</body>
+
+</html>

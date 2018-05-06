@@ -1,0 +1,40 @@
+* {
+    outline: none;
+    border: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+    overflow: hidden
+}
+
+html {
+    font-family: sans-serif;
+    color: white;
+    font-size: 2vmin;
+    line-height: 3vmin;
+    overflow-y: scroll;
+    background: black;
+}
+
+legend {
+    font-size: 4vmin;
+    line-height: 5vmin;
+}
+
+fieldset {
+    display: inline-block;
+    margin: 1vmin;
+    vertical-align: top;
+}
+
+label {
+    display: block;
+}
+
+input {
+    margin-left: 1vmin;
+    float: right;
+}

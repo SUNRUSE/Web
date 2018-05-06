@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/shared.css">
+  <title>SUNRUSE Logo - SUNRUSE</title>
+</head>
+
+<body>
+  <nav>
+    <a href="/">
+      <h1>
+        <img src="/logo.svg" onerror="this.src='/logo.png'" alt="SUNRUSE">
+      </h1>
+    </a>
+    <h2>Open Source</h2>
+    <a href="/game-prototypes">Game Prototypes</a>
+    <a href="/shaders">Shaders</a>
+    <h2>Miscellaneous</h2>
+    <a href="/miscellaneous/3d-modelling">3D Modelling</a>
+    <a href="/miscellaneous/about-contact">About/Contact</a>
+    <a href="/miscellaneous/links">Links</a>
+  </nav>
+  <link rel="stylesheet" type="text/css" href="../../viewer.css">
+  <div id="loading">
+    <img src="preview.png" />
+    <div id="loading-description">Downloading...</div>
+  </div>
+  <script id="code" type="glsl">
+#ifdef GL_ES
+precision mediump float;
+#endif
+uniform float seconds;
+uniform vec2 resolution;
+uniform vec2 mouse;
+
+#define samples 3.0
+#define samplesHigh 6.0
+float sunruse(vec2 ndc) {
+	return length(ndc) < 0.262 || length(ndc) > pow(mix(0.77, 0.66, abs(fract(6.0 * (atan(ndc.x, ndc.y) / 3.142) - 0.5) - 0.5)), 4.0) ? 0.0 : 1.0;
+}
+
+vec2 toNdc(vec2 fragCoord, vec2 res) {
+	return (fragCoord - (res / 2.0)) / min(res.x, res.y);
+}
+
+float multisampleSunruse(vec2 pixel, vec2 res, float spacing) {	
+	float accumulator = 0.0;
+	for(float x = -0.5; x < 0.5; x += (1.0 / samples))
+		for(float y = -0.5; y < 0.5; y += (1.0 / samples))
+			accumulator += sunruse(toNdc(pixel + vec2(x, y) * spacing, res));
+	return accumulator / samples / samples;
+}
+
+float multisampleSunruseHigh(vec2 pixel, vec2 res, float spacing) {	
+	float accumulator = 0.0;
+	for(float x = -0.5; x < 0.5; x += (1.0 / samplesHigh))
+		for(float y = -0.5; y < 0.5; y += (1.0 / samplesHigh))
+			accumulator += sunruse(toNdc(pixel + vec2(x, y) * spacing, res));
+	return accumulator / samplesHigh / samplesHigh;
+}
+
+float flare(vec2 ndc) {
+	return pow(abs(ndc.y) + 0.4, 7.0) * 8.0;
+}
+
+float background(vec2 pixel, vec2 res) {
+	return mix(0.01, 0.0, pow(multisampleSunruseHigh(pixel, res, min(res.x, res.y) * 0.075), 0.5));
+}
+
+float scene(vec2 pixel, vec2 res) {
+	vec2 ndc = toNdc(pixel, res);
+	return mix(background(pixel + vec2(0.0, min(res.x, res.y) / 30.0), res), flare(ndc), multisampleSunruse(pixel, res, 1.0));
+}
+
+void main()
+{
+	gl_FragColor = vec4( vec3(pow(scene(gl_FragCoord.xy, resolution.xy), 1.0 / 2.2)), 1.0 );
+}
+</script>
+  <div id="toolbar">
+    <a href="../../">Back</a>
+    <input id="play" name="play" type="checkbox" checked>
+    <label for="play">Play</label>
+    <input id="show-code" name="show-code" type="checkbox">
+    <label for="show-code">Show Code</label>
+  </div>
+  <div id="canvas-container">
+    <canvas></canvas>
+  </div>
+  <script src="../../viewer.js"></script>
+</body>
+
+</html>

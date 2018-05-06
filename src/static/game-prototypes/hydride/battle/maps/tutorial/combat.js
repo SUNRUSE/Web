@@ -1,0 +1,1 @@
+return function(a){var b=new Battle.Room(a,0,0);new Battle.ExteriorDoor(b,"right",null,"tutorial/throwing"),a.tilesetName="leviathan"};

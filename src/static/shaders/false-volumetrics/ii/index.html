@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/favicon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="manifest" href="/favicon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/favicon/ms-icon-144x144.png">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/shared.css">
+  <title>II - SUNRUSE</title>
+</head>
+
+<body>
+  <nav>
+    <a href="/">
+      <h1>
+        <img src="/logo.svg" onerror="this.src='/logo.png'" alt="SUNRUSE">
+      </h1>
+    </a>
+    <h2>Open Source</h2>
+    <a href="/game-prototypes">Game Prototypes</a>
+    <a href="/shaders">Shaders</a>
+    <h2>Miscellaneous</h2>
+    <a href="/miscellaneous/3d-modelling">3D Modelling</a>
+    <a href="/miscellaneous/about-contact">About/Contact</a>
+    <a href="/miscellaneous/links">Links</a>
+  </nav>
+  <link rel="stylesheet" type="text/css" href="../../viewer.css">
+  <div id="loading">
+    <img src="preview.png" />
+    <div id="loading-description">Downloading...</div>
+  </div>
+  <script id="code" type="glsl">
+#ifdef GL_ES
+precision mediump float;
+#endif
+uniform float seconds;
+uniform vec2 resolution;
+uniform vec2 mouse;
+struct rayData {
+    vec3 start;
+    vec3 normal;
+};
+
+rayData lens(vec2 fragCoord) {
+    return rayData(vec3(0.0, 0.0, sin(seconds) * 10.0), normalize(vec3((fragCoord / resolution.xy) - 0.5, 0.3)));
+}
+    
+rayData translate(vec3 offset, rayData ray) {
+    return rayData(ray.start - offset, ray.normal);
+}
+
+rayData scale(vec3 factor, rayData ray) {
+    return rayData(ray.start / factor, normalize(ray.normal / factor));
+}
+
+rayData scale(float factor, rayData ray) {
+    return rayData(ray.start / factor, ray.normal);
+}
+
+vec3 shade(vec3 color, float intensity) {
+    return color * intensity;
+}
+
+float distanceAlong(rayData ray) {
+    return -dot(ray.start, ray.normal);
+}
+
+vec3 closestPoint(rayData ray) {
+    return ray.start + ray.normal * distanceAlong(ray);
+}
+
+float radial(rayData ray) {
+    return clamp(distanceAlong(ray), 0.0, 1.0) * max(0.0, 1.0 - (length(closestPoint(ray))));
+}
+
+float spot(rayData ray) {
+    return max(normalize(closestPoint(ray)).y, 0.0);
+}
+
+float spotWithReflection(rayData ray, float strength) {
+    float magnitude = normalize(closestPoint(ray)).y;
+    return abs(magnitude) * (magnitude < 0.0 ? strength : 1.0);
+}
+
+float quadratic(float val) {
+    return val * val * val * val;
+}
+
+void main() {
+    gl_FragColor = pow(vec4(vec3(0.0)
+        + shade(vec3(0.6, 0.1, 0.1), quadratic(radial(scale(32.0, translate(vec3(-30.0, 8.0, 40.0), lens(gl_FragCoord.xy))))))
+        + shade(vec3(0.5, 0.6, 0.8), quadratic(radial(scale(16.0, translate(vec3(-2.0, 8.0, 20.0), lens(gl_FragCoord.xy))))))
+        + shade(vec3(0.5, 0.6, 0.8) * 0.25, quadratic(radial(scale(12.0, translate(vec3(-2.0, -4.0, 20.0), lens(gl_FragCoord.xy))))))
+        + shade(vec3(0.8, 0.9, 0.1), quadratic(radial(scale(16.0, translate(vec3(-2.0, 8.0, 10.0), lens(gl_FragCoord.xy))))))
+        + shade(vec3(0.8, 0.9, 0.1) * 0.25, quadratic(radial(scale(12.0, translate(vec3(-2.0, -4.0, 10.0), lens(gl_FragCoord.xy))))))
+        + shade(vec3(1.0), quadratic(
+            spotWithReflection(scale(vec3(4.0, 16.0, 4.0), translate(vec3(3.0, -4.0, 10.0), lens(gl_FragCoord.xy))), 0.5)
+            * radial(scale(vec3(4.0, 16.0, 4.0), translate(vec3(3.0, -4.0, 10.0), lens(gl_FragCoord.xy))))
+        ))
+        + shade(vec3(1.0), quadratic(
+            spotWithReflection(scale(vec3(4.0, 16.0, 4.0), translate(vec3(3.0, -4.0, 15.0), lens(gl_FragCoord.xy))), 0.5)
+            * radial(scale(vec3(4.0, 16.0, 4.0), translate(vec3(3.0, -4.0, 15.0), lens(gl_FragCoord.xy))))
+        ))
+        + shade(vec3(1.0), quadratic(
+            spotWithReflection(scale(vec3(4.0, 16.0, 4.0), translate(vec3(3.0, -4.0, 5.0), lens(gl_FragCoord.xy))), 0.5)
+            * radial(scale(vec3(4.0, 16.0, 4.0), translate(vec3(3.0, -4.0, 5.0), lens(gl_FragCoord.xy))))
+        ))				
+        + shade(vec3(1.0), quadratic(
+            spotWithReflection(scale(vec3(4.0, 16.0, 4.0), translate(vec3(3.0, -4.0, 0.0), lens(gl_FragCoord.xy))), 0.5)
+            * radial(scale(vec3(4.0, 16.0, 4.0), translate(vec3(3.0, -4.0, 0.0), lens(gl_FragCoord.xy))))
+        ))		
+        + shade(vec3(1.0), quadratic(
+            spotWithReflection(scale(vec3(4.0, 16.0, 4.0), translate(vec3(-3.0, -4.0, 10.0), lens(gl_FragCoord.xy))), 0.5)
+            * radial(scale(vec3(4.0, 16.0, 4.0), translate(vec3(-3.0, -4.0, 10.0), lens(gl_FragCoord.xy))))
+        ))
+        + shade(vec3(1.0), quadratic(
+            spotWithReflection(scale(vec3(4.0, 16.0, 4.0), translate(vec3(-3.0, -4.0, 15.0), lens(gl_FragCoord.xy))), 0.5)
+            * radial(scale(vec3(4.0, 16.0, 4.0), translate(vec3(-3.0, -4.0, 15.0), lens(gl_FragCoord.xy))))
+        ))
+        + shade(vec3(1.0), quadratic(
+            spotWithReflection(scale(vec3(4.0, 16.0, 4.0), translate(vec3(-3.0, -4.0, 5.0), lens(gl_FragCoord.xy))), 0.5)
+            * radial(scale(vec3(4.0, 16.0, 4.0), translate(vec3(-3.0, -4.0, 5.0), lens(gl_FragCoord.xy))))
+        ))				
+        + shade(vec3(1.0), quadratic(
+            spotWithReflection(scale(vec3(4.0, 16.0, 4.0), translate(vec3(-3.0, -4.0, 0.0), lens(gl_FragCoord.xy))), 0.5)
+            * radial(scale(vec3(4.0, 16.0, 4.0), translate(vec3(-3.0, -4.0, 0.0), lens(gl_FragCoord.xy))))
+        ))				
+    , 1.0), vec4(1.0 / 2.2));
+}
+</script>
+  <div id="toolbar">
+    <a href="../../">Back</a>
+    <input id="play" name="play" type="checkbox" checked>
+    <label for="play">Play</label>
+    <input id="show-code" name="show-code" type="checkbox">
+    <label for="show-code">Show Code</label>
+  </div>
+  <div id="canvas-container">
+    <canvas></canvas>
+  </div>
+  <script src="../../viewer.js"></script>
+</body>
+
+</html>

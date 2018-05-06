@@ -1,0 +1,227 @@
+* {
+    padding: 0;
+    margin: 0;
+    outline: none;
+    border: none;
+    color: inherit;
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
+    text-decoration: inherit;
+    font-weight: inherit;
+    list-style: none;
+}
+
+html {
+    font-size: 1cm;
+    font-family: sans-serif;
+    color: black;
+}
+
+body {
+    font-size: 0.5rem;
+    padding: 0.5rem;
+    padding-bottom: 1rem;
+    padding-left: 6rem;
+    position: relative;
+    min-height: 20rem;
+}
+
+nav {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 6rem;
+    font-size: 0.625rem;
+    text-align: center;
+    padding-bottom: 1rem;
+}
+
+h2 {
+    display: block;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: 0.25rem;
+    color: #777;
+    text-transform: lowercase;
+}
+
+h2 ~ h2 {
+    padding-top: 0.5rem;
+}
+
+nav > a ~ a {
+    display: block;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    text-transform: lowercase;
+}
+
+@media only screen and (min-width: 36cm) {
+    html {
+        background: linear-gradient(to bottom, #d8d8d8, #eee);
+        background-attachment: fixed;
+    }
+    
+    body {
+        background: white;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.25);
+        border-radius: 0.125rem;
+        max-width: 30rem;
+        margin: auto;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media only screen and (max-width: 20cm) {
+    html {
+        font-size: 0.750cm;
+    }
+    
+    body {
+        position: static;
+        padding-left: 0.5rem;        
+    }
+    
+    nav {
+        position: static;
+        width: 100%;
+    }
+    
+    nav img {
+        width: 8rem;
+        height: 8rem;
+    }
+}
+
+h3 {
+    font-size: 0.9rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    clear: both;
+    text-transform: lowercase;
+}
+
+h3 ~ h3 {
+    padding-top: 1rem;
+}
+
+h4 {
+    font-size: 0.7rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    clear: both;
+    text-transform: lowercase;
+}
+
+body > a > img {
+    float: left;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    outline: 1px solid #BBB;
+    height: 3.5rem;
+}
+
+p {
+    padding-bottom: 0.25rem;
+    color: #333;
+}
+
+p a, li a, .tile a ~ a {
+    color: #000;
+    text-decoration: underline;
+}
+
+ul {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+li::before {
+    content: "• "
+}
+
+li + li {
+    padding-top: 0.25rem;
+}
+
+.tile {
+    display: inline-block;
+    width: 5.5rem;
+    text-align: center;
+    padding: 0.25rem;
+    padding-left: 0;
+    padding-right: 0;
+    vertical-align: top;
+}
+
+h5 {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    text-transform: lowercase;
+}
+
+.tile a ~ a {
+    display: block;
+    font-size: 0.4rem;
+    text-transform: lowercase;
+    text-decoration: none;
+}
+
+.tile p {
+    font-size: 0.4rem;
+    padding-bottom: 0;
+}
+
+.tile img {
+    width: 5.5rem;
+    height: 3.125rem;
+}
+
+.contact {
+    padding-top: 0.125rem;
+}
+
+.contact dd, .contact dt {
+    padding-top: 0.125rem;
+    float: left;
+}
+
+.contact dt {
+    clear: both;
+    display: inline-block;
+    color: #777;
+    width: 3rem;
+}
+
+.contact dt::after {
+    content: ": ";
+}
+
+.contact dd {
+    display: inline;
+}
+
+:not(a) > dt {
+    font-size: 0.65rem;
+}
+
+.downloads dt a::after {
+    content: " \2913";
+}
+
+:not(a) > dd {
+    color: #555;
+}
+
+dd {
+    padding-top: 0.25rem;
+    padding-bottom: 0.5rem;
+}
+
+dt {
+    text-transform: lowercase;
+}
